@@ -110,11 +110,11 @@ img{max-width:100%;display:block;}
 
 export function header(): string {
   return `<header class="bar"><div class="in">
-    <a class="wm" href="/read">DOT&nbsp;<span>1</span>&nbsp;NEWS</a>
+    <a class="wm" href="/">DOT&nbsp;<span>1</span>&nbsp;NEWS</a>
     <nav class="nav">
-      <a href="/read">Today</a>
-      <a href="/read#lens">The Lens</a>
-      <a href="/read#reel">The Reel</a>
+      <a href="/">Today</a>
+      <a href="/#lens">The Lens</a>
+      <a href="/#reel">The Reel</a>
       <a href="/score">Score a Story</a>
       <a href="/archive">Archive</a>
       <a href="https://www.dot1.media">Dot One Media</a>
@@ -145,9 +145,9 @@ export function footer(): string {
       </div>
       <div>
         <h4>Read</h4>
-        <a href="/read">Today&rsquo;s edition</a>
-        <a href="/read#lens">The Lens</a>
-        <a href="/read#reel">The Reel</a>
+        <a href="/">Today&rsquo;s edition</a>
+        <a href="/#lens">The Lens</a>
+        <a href="/#reel">The Reel</a>
         <a href="/score">Score a Story</a>
         <a href="/archive">Archive</a>
         <a href="${APP_STORE}">Get the app</a>
