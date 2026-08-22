@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db';
 import { clip, alaskaDate, APP_STORE } from '@/lib/theme';
+import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -16,6 +17,7 @@ interface ReaderItem {
   category?: string | null;
   editorNote?: string | null;
   credit?: string | null;
+  score?: StoryScore | null;
 }
 
 function href(i: ReaderItem): string {
@@ -26,7 +28,12 @@ function href(i: ReaderItem): string {
 async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[]; videos: ReaderItem[] }> {
   try {
     const [newsRows, photoRows, videoRows] = await Promise.all([
-      sql`SELECT id, title, summary, image, category, editor_note FROM news_stories
+      sql`SELECT id, title, summary, image, category, editor_note, score_confidence,
+                 bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
+                 psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
+                 sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care
+          FROM news_stories
           WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`,
       sql`SELECT id, caption, full_description, image, photographer FROM photos
           ORDER BY created_at DESC LIMIT 4`,
@@ -37,6 +44,7 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
       news: (newsRows as any[]).map((r) => ({
         id: r.id, kind: 'article', title: r.title, summary: r.summary,
         image: r.image, category: r.category, editorNote: r.editor_note,
+        score: scoreFromRow(r),
       })),
       photos: (photoRows as any[]).map((r) => ({
         id: r.id, kind: 'photo', title: r.caption || 'A photograph',
@@ -93,6 +101,20 @@ export default async function Home() {
               {lead.category && <div className="kicker">{lead.category}</div>}
               <h2><a href={href(lead)}>{lead.title}</a></h2>
               {lead.summary && <p>{clip(lead.summary, 320)}</p>}
+              {lead.score?.hasScore && (
+                <div className="leadscore">
+                  <div className="ls-num">{lead.score.composite.toFixed(1)}<span>/10</span></div>
+                  <div className="ls-detail">
+                    <div className="ls-label">D1&#8209;4LS Score{lead.score.confidence ? ` \u00b7 ${lead.score.confidence}` : ''}</div>
+                    <div className="ls-bars">
+                      <span title="Biblical Alignment">BAI {lead.score.bai}</span>
+                      <span title="Prophetic Significance">PSI {lead.score.psi}</span>
+                      <span title="Source Credibility">SCI {lead.score.sci}</span>
+                      <span title="Humanities Impact">HII {lead.score.hii}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               <Why note={lead.editorNote} n={300} />
               <div className="mark">&#9679;&nbsp; Approved by an editor</div>
               <div className="lead-actions">
