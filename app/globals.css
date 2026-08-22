@@ -1,0 +1,71 @@
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:#EFEAE0;color:#33302B;
+  font-family:Georgia,'Times New Roman',serif;line-height:1.5;}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+
+.bar{background:#F8F5EF;border-bottom:1px solid #D8CFC0;position:sticky;top:0;z-index:20;}
+.bar .in{max-width:1180px;margin:0 auto;padding:0 28px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.bar .wm{font-size:19px;font-weight:bold;letter-spacing:.6px;color:#1B1917;white-space:nowrap;}
+.bar .wm span{color:#B81616;}
+.nav{display:flex;align-items:center;gap:26px;}
+.nav a{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#33302B;white-space:nowrap;}
+.nav a:hover{color:#B81616;}
+.getapp{background:#B81616;color:#fff !important;font-size:12px;letter-spacing:1.4px;
+  text-transform:uppercase;font-weight:bold;padding:10px 16px;border-radius:6px;white-space:nowrap;}
+
+.masthead{background:#F8F5EF;border-bottom:1px solid #D8CFC0;}
+.masthead .in{max-width:1180px;margin:0 auto;padding:44px 28px 30px;text-align:center;}
+.masthead h1{margin:0 0 8px;font-size:60px;line-height:1;letter-spacing:1.5px;color:#1B1917;font-weight:bold;}
+.masthead h1 span{color:#B81616;}
+.masthead .tag{font-size:11px;letter-spacing:4.5px;text-transform:uppercase;color:#8A6A17;}
+.dateline{max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;
+  align-items:center;justify-content:space-between;gap:14px;
+  font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:#767065;
+  border-top:3px double #D8CFC0;border-bottom:3px double #D8CFC0;background:#F8F5EF;}
+
+.shell{max-width:1180px;margin:0 auto;padding:0 28px 56px;background:#F8F5EF;}
+.secHead{display:flex;align-items:baseline;gap:16px;margin:52px 0 26px;}
+.secHead h2{margin:0;font-size:13px;letter-spacing:3.4px;text-transform:uppercase;
+  color:#8A6A17;font-weight:bold;white-space:nowrap;}
+.secHead .line{flex:1;height:1px;background:#D8CFC0;}
+.kicker{font-size:10.5px;letter-spacing:2.6px;text-transform:uppercase;color:#B81616;font-weight:bold;}
+.why{border-left:3px solid #B81616;padding:1px 0 1px 15px;margin:14px 0 0;}
+.why .h{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:#B81616;font-weight:bold;padding-bottom:5px;}
+.why .t{font-size:14px;line-height:1.65;font-style:italic;color:#33302B;}
+.more{display:inline-block;margin-top:14px;font-size:13px;font-weight:bold;color:#B81616;}
+.more:hover{text-decoration:underline;}
+
+.foot{background:#14120F;color:#8A8175;margin-top:0;}
+.foot .in{max-width:1180px;margin:0 auto;padding:52px 28px 34px;
+  display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:40px;}
+.foot h4{margin:0 0 14px;font-size:10.5px;letter-spacing:2.4px;text-transform:uppercase;color:#F3EEE4;font-weight:bold;}
+.foot a{display:block;font-size:13.5px;line-height:2;color:#8A8175;}
+.foot a:hover{color:#F3EEE4;}
+.foot .wm{font-size:23px;font-weight:bold;color:#F3EEE4;letter-spacing:.6px;margin-bottom:8px;}
+.foot .wm span{color:#B81616;}
+.foot .motto{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;line-height:1.8;margin-bottom:16px;}
+.foot .blurb{font-size:13.5px;line-height:1.75;max-width:330px;}
+.legal{border-top:1px solid #2A2621;}
+.legal .in{max-width:1180px;margin:0 auto;padding:20px 28px 34px;
+  display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:12px;color:#6B655C;}
+
+@media(max-width:1000px){
+  .foot .in{grid-template-columns:1fr 1fr;gap:32px;}
+  .masthead h1{font-size:46px;}
+}
+@media(max-width:760px){
+  .bar .in{height:56px;padding:0 18px;}
+  .nav a:not(.getapp){display:none;}
+  .masthead .in{padding:30px 18px 22px;}
+  .masthead h1{font-size:34px;}
+  .masthead .tag{font-size:9.5px;letter-spacing:3px;}
+  .dateline{padding:10px 18px;font-size:10px;letter-spacing:1.1px;}
+  .dateline .mid{display:none;}
+  .shell{padding:0 18px 40px;}
+  .secHead{margin:38px 0 20px;}
+  .foot .in{grid-template-columns:1fr;gap:26px;padding:38px 18px 24px;}
+  .legal .in{padding:18px 18px 30px;flex-direction:column;gap:8px;}
+}
