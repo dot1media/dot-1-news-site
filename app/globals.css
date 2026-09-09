@@ -149,3 +149,7 @@ img{max-width:100%;display:block;}
   .leadscore{gap:14px;padding:14px 16px;}
   .leadscore .ls-num{font-size:30px;}
 }
+
+@keyframes dot1-globe-spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+.wm .dot1-globe, .masthead h1 .dot1-globe { margin: 0 0.06em; }
+@media (prefers-reduced-motion: reduce) { svg[style*="dot1-globe-spin"] { animation: none !important; } }

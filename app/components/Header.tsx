@@ -1,9 +1,10 @@
 import { APP_STORE } from '@/lib/theme';
+import Globe from "@/app/components/Globe";
 
 export default function Header() {
   return (
     <header className="bar"><div className="in">
-      <a className="wm" href="/">DOT&nbsp;<span>1</span>&nbsp;NEWS</a>
+      <a className="wm" href="/">DOT&nbsp;<Globe size={"1em"} />&nbsp;NEWS</a>
       <nav className="nav">
         <a href="/">Today</a>
         <a href="/#lens">The Lens</a>
