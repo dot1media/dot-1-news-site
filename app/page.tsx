@@ -1,5 +1,5 @@
 import { sql } from '@/lib/db';
-import Globe from "@/app/components/Globe";
+import NewsLogo from "@/app/components/NewsLogo";
 import { clip, alaskaDate, APP_STORE } from '@/lib/theme';
 import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
@@ -83,7 +83,7 @@ export default async function Home() {
       <Header />
 
       <div className="masthead"><div className="in">
-        <h1>DOT&nbsp;<Globe size={"0.92em"} />&nbsp;NEWS</h1>
+        <h1>DOT&nbsp;<NewsLogo h="1.15em" />&nbsp;NEWS</h1>
         <div className="tag">A Declared Standpoint</div>
       </div></div>
       <div className="dateline">

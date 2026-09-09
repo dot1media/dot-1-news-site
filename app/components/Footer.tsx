@@ -1,5 +1,5 @@
 import { APP_STORE } from '@/lib/theme';
-import Globe from "@/app/components/Globe";
+import NewsLogo from "@/app/components/NewsLogo";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="foot">
       <div className="in">
         <div>
-          <div className="wm">DOT&nbsp;<Globe size={"1em"} />&nbsp;NEWS</div>
+          <div className="wm">DOT&nbsp;<NewsLogo h="1.3em" />&nbsp;NEWS</div>
           <div className="motto">A Declared Standpoint</div>
           <p className="blurb">A small, human-edited daily paper. Every story is read and approved by a person before it reaches you, and every story tells you why it ran. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
         </div>
