@@ -99,7 +99,7 @@ img{max-width:100%;display:block;}
 
 .reel{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;}
 .reel .shot{position:relative;background:#14120F;}
-.reel .shot img{width:100%;height:190px;object-fit:cover;opacity:.92;}
+.reel .shot img,.reel .shot video{width:100%;height:190px;object-fit:cover;opacity:.92;display:block;}
 .reel .play{position:absolute;left:0;right:0;bottom:12px;text-align:center;
   font-size:11.5px;letter-spacing:1.8px;text-transform:uppercase;color:#F3EEE4;}
 .reel h3{margin:12px 0 8px;font-size:19px;line-height:1.3;color:#1B1917;}

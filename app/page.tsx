@@ -4,6 +4,7 @@ import { clip, alaskaDate, APP_STORE } from '@/lib/theme';
 import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { isImageUrl, isVideoUrl } from '@/lib/media';
 
 // Always render fresh from the shared database so the site reflects what the
 // app just published. Revalidate window keeps it fast without going stale.
@@ -19,6 +20,7 @@ interface ReaderItem {
   editorNote?: string | null;
   credit?: string | null;
   score?: StoryScore | null;
+  videoUrl?: string | null;
 }
 
 function href(i: ReaderItem): string {
@@ -37,8 +39,10 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
           FROM news_stories
           WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`,
       sql`SELECT id, caption, full_description, image, photographer FROM photos
+          WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted')
           ORDER BY created_at DESC LIMIT 4`,
-      sql`SELECT id, title, description, thumbnail FROM videos
+      sql`SELECT id, title, description, thumbnail, video_url FROM videos
+          WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted')
           ORDER BY created_at DESC LIMIT 3`,
     ]);
     return {
@@ -52,7 +56,9 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
         summary: r.full_description, image: r.image, credit: r.photographer,
       })),
       videos: (videoRows as any[]).map((r) => ({
-        id: r.id, kind: 'video', title: r.title, summary: r.description, image: r.thumbnail,
+        id: r.id, kind: 'video', title: r.title, summary: r.description,
+        image: isImageUrl(r.thumbnail) ? r.thumbnail : null,
+        videoUrl: r.video_url || (isVideoUrl(r.thumbnail) ? r.thumbnail : null),
       })),
     };
   } catch (e: any) {
@@ -166,7 +172,9 @@ export default async function Home() {
               {videos.slice(0, 3).map((v) => (
                 <article key={v.id}>
                   <a className="shot" href={href(v)}>
-                    {v.image && <img src={v.image} alt="" />}
+                    {v.image ? <img src={v.image} alt="" />
+                      : v.videoUrl ? <video src={`${v.videoUrl}#t=2`} muted playsInline preload="metadata" aria-hidden="true" />
+                      : null}
                     <span className="play">&#9654;&nbsp; Watch</span>
                   </a>
                   <h3><a href={href(v)}>{v.title}</a></h3>

@@ -4,6 +4,7 @@ import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { isImageUrl, isVideoUrl, videoMime } from '@/lib/media';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ interface ShareItem {
   category?: string | null;
   editorNote?: string | null;
   credit?: string | null;
+  videoUrl?: string | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
@@ -24,13 +26,17 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
       const x = r[0] as any;
       if (x) return { kind: 'article', title: x.title, summary: x.summary, image: x.image, category: x.category, editorNote: x.editor_note };
     } else if (kind === 'p' || kind === 'photo') {
-      const r = await sql`SELECT caption, full_description, image, photographer FROM photos WHERE id = ${id} LIMIT 1`;
+      const r = await sql`SELECT caption, full_description, image, photographer FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
       const x = r[0] as any;
       if (x) return { kind: 'photo', title: x.caption || 'A photograph', summary: x.full_description, image: x.image, credit: x.photographer };
     } else if (kind === 'v' || kind === 'video') {
-      const r = await sql`SELECT title, description, thumbnail FROM videos WHERE id = ${id} LIMIT 1`;
+      const r = await sql`SELECT title, description, thumbnail, video_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
       const x = r[0] as any;
-      if (x) return { kind: 'video', title: x.title, summary: x.description, image: x.thumbnail };
+      if (x) return {
+        kind: 'video', title: x.title, summary: x.description,
+        image: isImageUrl(x.thumbnail) ? x.thumbnail : null,
+        videoUrl: x.video_url || (isVideoUrl(x.thumbnail) ? x.thumbnail : null),
+      };
     }
   } catch (e: any) {
     console.error('share page query failed:', e?.message);
@@ -54,8 +60,9 @@ export async function generateMetadata({ params }: { params: { kind: string; id:
     description: desc,
     alternates: { canonical: url },
     openGraph: {
-      title, description: desc, url, type: 'article',
+      title, description: desc, url, type: item.kind === 'video' ? 'video.other' : 'article',
       images: item.image ? [{ url: item.image, width: 1200, height: 630 }] : undefined,
+      videos: item.kind === 'video' && item.videoUrl ? [{ url: item.videoUrl, secureUrl: item.videoUrl, type: videoMime(item.videoUrl), width: 1920, height: 1080 }] : undefined,
     },
     twitter: {
       card: item.image ? 'summary_large_image' : 'summary',
@@ -71,6 +78,8 @@ const CSS = `.piece{max-width:760px;margin:0 auto;padding:44px 0 20px;}
 .piece .credit{margin:0 0 20px;font-size:13px;font-style:italic;color:#767065;}
 .piece .hero{margin:26px 0 30px;background:#E6DED1;}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
+.piece .player{margin:26px 0 30px;background:#14120F;}
+.piece .player video{width:100%;aspect-ratio:16/9;display:block;background:#14120F;}
 .piece .sum{margin:0 0 24px;font-size:19px;line-height:1.75;color:#33302B;}
 .piece .why{margin:28px 0 30px;}
 .piece .why .t{font-size:15.5px;}
@@ -114,7 +123,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
     : item.kind === 'video' ? 'The Reel'
     : (item.category || 'Dot 1 News');
   const cta = item.kind === 'photo' ? 'See the full frame in the app'
-    : item.kind === 'video' ? 'Watch it in the app'
+    : item.kind === 'video' ? 'Keep watching in the app'
     : 'Read it in the app';
 
   return (
@@ -126,7 +135,14 @@ export default async function SharePage({ params }: { params: { kind: string; id
           <div className="kicker">{label}</div>
           <h1>{item.title}</h1>
           {item.credit && <p className="credit">Photograph &middot; {item.credit}</p>}
-          {item.image && <div className="hero"><img src={item.image} alt="" /></div>}
+          {item.kind === 'video' && item.videoUrl ? (
+            <div className="player">
+              <video controls playsInline preload="metadata" poster={item.image || undefined}>
+                <source src={item.videoUrl} type={videoMime(item.videoUrl) === 'video/quicktime' ? 'video/mp4' : videoMime(item.videoUrl)} />
+                Your browser cannot play this video here. It is also in the Dot 1 News app.
+              </video>
+            </div>
+          ) : item.image ? <div className="hero"><img src={item.image} alt="" /></div> : null}
           {item.summary && <p className="sum">{item.summary}</p>}
           {item.editorNote && (
             <div className="why">
