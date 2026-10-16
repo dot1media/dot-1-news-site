@@ -60,9 +60,11 @@ export async function generateMetadata({ params }: { params: { kind: string; id:
     description: desc,
     alternates: { canonical: url },
     openGraph: {
-      title, description: desc, url, type: item.kind === 'video' ? 'video.other' : 'article',
-      images: item.image ? [{ url: item.image, width: 1200, height: 630 }] : undefined,
-      videos: item.kind === 'video' && item.videoUrl ? [{ url: item.videoUrl, secureUrl: item.videoUrl, type: videoMime(item.videoUrl), width: 1920, height: 1080 }] : undefined,
+      // Plain article card on purpose: Facebook drops the preview image when a link advertises a
+      // raw video file from another host (og:video), so videos share as an image card that opens
+      // the page, where the player is.
+      title, description: desc, url, type: 'article', siteName: 'Dot 1 News',
+      images: item.image ? [{ url: item.image, alt: item.title }] : undefined,
     },
     twitter: {
       card: item.image ? 'summary_large_image' : 'summary',
