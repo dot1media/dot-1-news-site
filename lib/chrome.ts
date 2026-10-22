@@ -108,9 +108,15 @@ img{max-width:100%;display:block;}
   .legal .in{padding:18px 18px 30px;flex-direction:column;gap:8px;}
 }`;
 
+// The Dot 1 News mark (animated globe in the "1"), matching the React <NewsLogo>.
+// Static PNG shown when reduced motion is preferred.
+function mark(h: string): string {
+  return `<picture aria-label="1" role="img" style="display:inline-block;height:${h};vertical-align:-0.22em;line-height:0;margin:0 0.02em"><source srcset="/news-logo.png" media="(prefers-reduced-motion: reduce)"><img src="/news-logo.gif" alt="1" style="height:100%;width:auto;display:block"></picture>`;
+}
+
 export function header(): string {
   return `<header class="bar"><div class="in">
-    <a class="wm" href="/">DOT&nbsp;<span>1</span>&nbsp;NEWS</a>
+    <a class="wm" href="/">DOT&nbsp;${mark('1.3em')}&nbsp;NEWS</a>
     <nav class="nav">
       <a href="/">Today</a>
       <a href="/#lens">The Lens</a>
@@ -125,12 +131,11 @@ export function header(): string {
 
 export function masthead(dateLabel: string, countLabel: string): string {
   return `<div class="masthead"><div class="in">
-      <h1>DOT&nbsp;<span>1</span>&nbsp;NEWS</h1>
-      <div class="tag">A Declared Standpoint</div>
+      <h1>DOT&nbsp;${mark('1.15em')}&nbsp;NEWS</h1>
+      <div class="tag">A declared standpoint, not a hidden one.</div>
     </div></div>
     <div class="dateline">
       <span>${esc(dateLabel)}</span>
-      <span class="mid">The dot is the point of light &middot; The one is the singular truth</span>
       <span>${esc(countLabel)}</span>
     </div>`;
 }
@@ -139,8 +144,8 @@ export function footer(): string {
   const year = new Date().getFullYear();
   return `<footer class="foot"><div class="in">
       <div>
-        <div class="wm">DOT&nbsp;<span>1</span>&nbsp;NEWS</div>
-        <div class="motto">A Declared Standpoint</div>
+        <div class="wm">DOT&nbsp;${mark('1.3em')}&nbsp;NEWS</div>
+        <div class="motto">A declared standpoint, not a hidden one.</div>
         <p class="blurb">A small, human-edited daily paper. Every story is read and approved by a person before it reaches you, and every story tells you why it ran. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
       </div>
       <div>

@@ -90,11 +90,10 @@ export default async function Home() {
 
       <div className="masthead"><div className="in">
         <h1>DOT&nbsp;<NewsLogo h="1.15em" />&nbsp;NEWS</h1>
-        <div className="tag">A Declared Standpoint</div>
+        <div className="tag">A declared standpoint, not a hidden one.</div>
       </div></div>
       <div className="dateline">
         <span>{alaskaDate()}</span>
-        <span className="mid">The dot is the point of light &middot; The one is the singular truth</span>
         <span>{countLabel}</span>
       </div>
 
