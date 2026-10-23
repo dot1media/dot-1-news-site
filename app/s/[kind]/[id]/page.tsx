@@ -16,6 +16,7 @@ interface ShareItem {
   category?: string | null;
   editorNote?: string | null;
   credit?: string | null;
+  creditUrl?: string | null;
   videoUrl?: string | null;
 }
 
@@ -26,16 +27,30 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
       const x = r[0] as any;
       if (x) return { kind: 'article', title: x.title, summary: x.summary, image: x.image, category: x.category, editorNote: x.editor_note };
     } else if (kind === 'p' || kind === 'photo') {
-      const r = await sql`SELECT caption, full_description, image, photographer FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
-      const x = r[0] as any;
-      if (x) return { kind: 'photo', title: x.caption || 'A photograph', summary: x.full_description, image: x.image, credit: x.photographer };
+      // credit_url is added by the editorial app on first sourced publish; query defensively.
+      let x: any;
+      try {
+        const r = await sql`SELECT caption, full_description, image, photographer, credit_url FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        x = r[0];
+      } catch {
+        const r = await sql`SELECT caption, full_description, image, photographer FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        x = r[0];
+      }
+      if (x) return { kind: 'photo', title: x.caption || 'A photograph', summary: x.full_description, image: x.image, credit: x.photographer, creditUrl: x.credit_url || null };
     } else if (kind === 'v' || kind === 'video') {
-      const r = await sql`SELECT title, description, thumbnail, video_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
-      const x = r[0] as any;
+      let x: any;
+      try {
+        const r = await sql`SELECT title, description, thumbnail, video_url, producer, credit_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        x = r[0];
+      } catch {
+        const r = await sql`SELECT title, description, thumbnail, video_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        x = r[0];
+      }
       if (x) return {
         kind: 'video', title: x.title, summary: x.description,
         image: isImageUrl(x.thumbnail) ? x.thumbnail : null,
         videoUrl: x.video_url || (isVideoUrl(x.thumbnail) ? x.thumbnail : null),
+        credit: x.producer || null, creditUrl: x.credit_url || null,
       };
     }
   } catch (e: any) {
@@ -136,7 +151,12 @@ export default async function SharePage({ params }: { params: { kind: string; id
         <article className="piece">
           <div className="kicker">{label}</div>
           <h1>{item.title}</h1>
-          {item.credit && <p className="credit">Photograph &middot; {item.credit}</p>}
+          {item.credit && (
+            <p className="credit">
+              {item.kind === 'video' ? 'Produced by' : 'Photograph'} &middot;{' '}
+              {item.creditUrl ? <a href={item.creditUrl} target="_blank" rel="noreferrer noopener" style={{ color: 'inherit', textDecoration: 'underline' }}>{item.credit}</a> : item.credit}
+            </p>
+          )}
           {item.kind === 'video' && item.videoUrl ? (
             <div className="player">
               <video controls playsInline preload="metadata" poster={item.image || undefined}>

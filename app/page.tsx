@@ -19,6 +19,7 @@ interface ReaderItem {
   category?: string | null;
   editorNote?: string | null;
   credit?: string | null;
+  creditUrl?: string | null;
   score?: StoryScore | null;
   videoUrl?: string | null;
 }
@@ -38,12 +39,26 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
                  hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care
           FROM news_stories
           WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`,
-      sql`SELECT id, caption, full_description, image, photographer FROM photos
-          WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted')
-          ORDER BY created_at DESC LIMIT 4`,
-      sql`SELECT id, title, description, thumbnail, video_url FROM videos
-          WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted')
-          ORDER BY created_at DESC LIMIT 3`,
+      // credit_url is added by the editorial app on first sourced publish; query it
+      // defensively so a not-yet-created column never breaks the edition.
+      (async () => {
+        try {
+          return await sql`SELECT id, caption, full_description, image, photographer, credit_url FROM photos
+            WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') ORDER BY created_at DESC LIMIT 4`;
+        } catch {
+          return await sql`SELECT id, caption, full_description, image, photographer FROM photos
+            WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') ORDER BY created_at DESC LIMIT 4`;
+        }
+      })(),
+      (async () => {
+        try {
+          return await sql`SELECT id, title, description, thumbnail, video_url, producer, credit_url FROM videos
+            WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') ORDER BY created_at DESC LIMIT 3`;
+        } catch {
+          return await sql`SELECT id, title, description, thumbnail, video_url FROM videos
+            WHERE COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') ORDER BY created_at DESC LIMIT 3`;
+        }
+      })(),
     ]);
     return {
       news: (newsRows as any[]).map((r) => ({
@@ -53,12 +68,13 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
       })),
       photos: (photoRows as any[]).map((r) => ({
         id: r.id, kind: 'photo', title: r.caption || 'A photograph',
-        summary: r.full_description, image: r.image, credit: r.photographer,
+        summary: r.full_description, image: r.image, credit: r.photographer, creditUrl: r.credit_url || null,
       })),
       videos: (videoRows as any[]).map((r) => ({
         id: r.id, kind: 'video', title: r.title, summary: r.description,
         image: isImageUrl(r.thumbnail) ? r.thumbnail : null,
         videoUrl: r.video_url || (isVideoUrl(r.thumbnail) ? r.thumbnail : null),
+        credit: r.producer || null, creditUrl: r.credit_url || null,
       })),
     };
   } catch (e: any) {
@@ -178,6 +194,7 @@ export default async function Home() {
                   </a>
                   <h3><a href={href(v)}>{v.title}</a></h3>
                   {v.summary && <p>{clip(v.summary, 120)}</p>}
+                  {v.credit && <p className="by">Produced by {v.credit}</p>}
                 </article>
               ))}
             </div>
