@@ -22,6 +22,25 @@ interface ReaderItem {
   creditUrl?: string | null;
   score?: StoryScore | null;
   videoUrl?: string | null;
+  verificationStatus?: string | null;
+}
+
+// The verification dot, shared in meaning with the app: gold verified, orange
+// pending, red unverified. A published story defaults to verified.
+const VERIFY: Record<string, { label: string; color: string }> = {
+  verified: { label: 'Verified', color: '#D4AF37' },
+  pending: { label: 'Pending verification', color: '#E08A2B' },
+  unverified: { label: 'Unverified', color: '#C8372A' },
+};
+
+function VerifyMark({ status, className = 'mark' }: { status?: string | null; className?: string }) {
+  const v = VERIFY[status || 'verified'] || VERIFY.verified;
+  return (
+    <div className={className}>
+      <span style={{ display: 'inline-block', width: '0.62em', height: '0.62em', borderRadius: '50%', background: v.color, verticalAlign: 'baseline' }} />
+      &nbsp; {v.label}
+    </div>
+  );
 }
 
 function href(i: ReaderItem): string {
@@ -32,13 +51,28 @@ function href(i: ReaderItem): string {
 async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[]; videos: ReaderItem[] }> {
   try {
     const [newsRows, photoRows, videoRows] = await Promise.all([
-      sql`SELECT id, title, summary, image, category, editor_note, score_confidence,
+      // verification_status is set by the editorial platform; query it defensively so
+      // a not-yet-migrated column never breaks the edition. Missing reads as verified.
+      (async () => {
+        try {
+          return await sql`SELECT id, title, summary, image, category, editor_note, score_confidence,
+                 bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
+                 psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
+                 sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
+                 COALESCE(verification_status, 'verified') AS verification_status
+            FROM news_stories
+            WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`;
+        } catch {
+          return await sql`SELECT id, title, summary, image, category, editor_note, score_confidence,
                  bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
                  psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                  sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                  hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care
-          FROM news_stories
-          WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`,
+            FROM news_stories
+            WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`;
+        }
+      })(),
       // credit_url is added by the editorial app on first sourced publish; query it
       // defensively so a not-yet-created column never breaks the edition.
       (async () => {
@@ -64,7 +98,7 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
       news: (newsRows as any[]).map((r) => ({
         id: r.id, kind: 'article', title: r.title, summary: r.summary,
         image: r.image, category: r.category, editorNote: r.editor_note,
-        score: scoreFromRow(r),
+        score: scoreFromRow(r), verificationStatus: r.verification_status || 'verified',
       })),
       photos: (photoRows as any[]).map((r) => ({
         id: r.id, kind: 'photo', title: r.caption || 'A photograph',
@@ -138,7 +172,7 @@ export default async function Home() {
                 </div>
               )}
               <Why note={lead.editorNote} n={300} />
-              <div className="mark">&#9679;&nbsp; Approved by an editor</div>
+              <VerifyMark status={lead.verificationStatus} />
               <div className="lead-actions">
                 <a className="more" href={href(lead)}>Read the full story &rsaquo;</a>
                 <a className="scorelink" href={`/score?t=${encodeURIComponent(lead.title)}`}>Score this story yourself &rsaquo;</a>

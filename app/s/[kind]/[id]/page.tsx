@@ -18,14 +18,22 @@ interface ShareItem {
   credit?: string | null;
   creditUrl?: string | null;
   videoUrl?: string | null;
+  verificationStatus?: string | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
   try {
     if (kind === 'n' || kind === 'article') {
-      const r = await sql`SELECT title, summary, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
-      const x = r[0] as any;
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, image: x.image, category: x.category, editorNote: x.editor_note };
+      // verification_status queried defensively; a missing column reads as verified.
+      let x: any;
+      try {
+        const r = await sql`SELECT title, summary, image, category, editor_note, COALESCE(verification_status, 'verified') AS verification_status FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+        x = r[0];
+      } catch {
+        const r = await sql`SELECT title, summary, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+        x = r[0];
+      }
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified' };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -172,7 +180,21 @@ export default async function SharePage({ params }: { params: { kind: string; id
               <div className="t">{item.editorNote}</div>
             </div>
           )}
-          <div className="mark"><span className="dot" /> Approved by an editor</div>
+          {item.kind === 'article' ? (() => {
+            const V: Record<string, { label: string; color: string }> = {
+              verified: { label: 'Verified', color: '#D4AF37' },
+              pending: { label: 'Pending verification', color: '#E08A2B' },
+              unverified: { label: 'Unverified', color: '#C8372A' },
+            };
+            const v = V[item.verificationStatus || 'verified'] || V.verified;
+            return (
+              <div className="mark">
+                <span className="dot" style={{ background: v.color }} /> {v.label}
+              </div>
+            );
+          })() : (
+            <div className="mark"><span className="dot" /> Approved by an editor</div>
+          )}
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
