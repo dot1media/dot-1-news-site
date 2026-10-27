@@ -19,6 +19,7 @@ interface ShareItem {
   creditUrl?: string | null;
   videoUrl?: string | null;
   verificationStatus?: string | null;
+  content?: string | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
@@ -27,13 +28,13 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
       // verification_status queried defensively; a missing column reads as verified.
       let x: any;
       try {
-        const r = await sql`SELECT title, summary, image, category, editor_note, COALESCE(verification_status, 'verified') AS verification_status FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+        const r = await sql`SELECT title, summary, content, image, category, editor_note, COALESCE(verification_status, 'verified') AS verification_status FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       } catch {
-        const r = await sql`SELECT title, summary, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+        const r = await sql`SELECT title, summary, content, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified' };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified' };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -105,7 +106,9 @@ const CSS = `.piece{max-width:760px;margin:0 auto;padding:44px 0 20px;}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
 .piece .player video{width:100%;aspect-ratio:16/9;display:block;background:#14120F;}
-.piece .sum{margin:0 0 24px;font-size:19px;line-height:1.75;color:#33302B;}
+.piece .sum{margin:0 0 24px;font-size:20px;line-height:1.7;color:#33302B;font-weight:500;}
+.piece .body p{margin:0 0 20px;font-size:18px;line-height:1.8;color:#2A2721;}
+.piece .body p:first-child{margin-top:4px;}
 .piece .why{margin:28px 0 30px;}
 .piece .why .t{font-size:15.5px;}
 .mark{display:flex;align-items:center;gap:9px;padding:18px 0 0;border-top:1px solid #E6DED1;font-size:13px;color:#8A6A17;font-weight:bold;}
@@ -147,9 +150,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
   const label = item.kind === 'photo' ? 'The Lens'
     : item.kind === 'video' ? 'The Reel'
     : (item.category || 'Dot 1 News');
-  const cta = item.kind === 'photo' ? 'See the full frame in the app'
-    : item.kind === 'video' ? 'Keep watching in the app'
-    : 'Read it in the app';
+  const cta = 'Carry the edition with you';
 
   return (
     <>
@@ -174,6 +175,14 @@ export default async function SharePage({ params }: { params: { kind: string; id
             </div>
           ) : item.image ? <div className="hero"><img src={item.image} alt="" /></div> : null}
           {item.summary && <p className="sum">{item.summary}</p>}
+          {item.kind === 'article' && item.content && (
+            <div className="body">
+              {item.content.split(/\n{2,}/).map((para, i) => {
+                const t = para.trim();
+                return t ? <p key={i}>{t}</p> : null;
+              })}
+            </div>
+          )}
           {item.editorNote && (
             <div className="why">
               <div className="h">Why We Ran This</div>
@@ -198,7 +207,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
-          <p>The full story lives in Dot 1 News, alongside the rest of today&rsquo;s edition. A few stories, chosen by a person, each with the reason it ran, and then it ends.</p>
+          <p>This story is part of today&rsquo;s edition in Dot 1 News. A few stories, chosen by a person, each with the reason it ran, and then it ends.</p>
           <a className="btn" href={APP_STORE}>Get Dot 1 News free &rsaquo;</a>
           <p className="fine">Free on the App Store.</p>
         </section>
