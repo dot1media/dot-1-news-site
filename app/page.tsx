@@ -3,7 +3,7 @@ import NewsLogo from "@/app/components/NewsLogo";
 import type { Metadata } from 'next';
 import { clip, alaskaDate, APP_STORE, SITE_URL } from '@/lib/theme';
 import { homeGraph } from '@/lib/seo';
-import { getWeather } from '@/lib/weather';
+import WeatherBar from '@/app/components/WeatherBar';
 import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -143,7 +143,6 @@ function Why({ note, n = 190 }: { note?: string | null; n?: number }) {
 
 export default async function Home() {
   const { news, photos, videos } = await getEdition();
-  const weather = await getWeather();
   const [lead, ...rest] = news;
   const total = news.length + photos.length + videos.length;
   const countLabel = total === 0 ? 'The edition is being read'
@@ -160,7 +159,7 @@ export default async function Home() {
       </div></div>
       <div className="dateline">
         <span>{alaskaDate()}</span>
-        {weather && <span className="mid">Wasilla {weather.tempF}&deg;F{weather.label ? `, ${weather.label}` : ''}</span>}
+        <WeatherBar />
         <span>{countLabel}</span>
       </div>
 
