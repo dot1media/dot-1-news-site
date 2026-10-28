@@ -3,6 +3,7 @@ import NewsLogo from "@/app/components/NewsLogo";
 import type { Metadata } from 'next';
 import { clip, alaskaDate, APP_STORE, SITE_URL } from '@/lib/theme';
 import { homeGraph } from '@/lib/seo';
+import { getWeather } from '@/lib/weather';
 import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -142,6 +143,7 @@ function Why({ note, n = 190 }: { note?: string | null; n?: number }) {
 
 export default async function Home() {
   const { news, photos, videos } = await getEdition();
+  const weather = await getWeather();
   const [lead, ...rest] = news;
   const total = news.length + photos.length + videos.length;
   const countLabel = total === 0 ? 'The edition is being read'
@@ -158,6 +160,7 @@ export default async function Home() {
       </div></div>
       <div className="dateline">
         <span>{alaskaDate()}</span>
+        {weather && <span className="mid">Wasilla {weather.tempF}&deg;F{weather.label ? `, ${weather.label}` : ''}</span>}
         <span>{countLabel}</span>
       </div>
 
@@ -197,16 +200,17 @@ export default async function Home() {
 
         {rest.length > 0 && (
           <>
-            <div className="secHead"><h2>Also Today</h2><div className="line" /></div>
-            <div className="well">
+            <div className="secHead"><h2>More in today&rsquo;s edition</h2><div className="line" /></div>
+            <div className="rows">
               {rest.map((s) => (
-                <article className="story" key={s.id}>
-                  <a className="shot" href={href(s)}>{s.image && <img src={s.image} alt="" />}</a>
-                  {s.category && <div className="kicker">{s.category}</div>}
-                  <h3><a href={href(s)}>{s.title}</a></h3>
-                  {s.summary && <p>{clip(s.summary, 150)}</p>}
-                  <a className="more" href={href(s)}>Read &rsaquo;</a>
-                </article>
+                <a className="row" href={href(s)} key={s.id}>
+                  <div className="rthumb">{s.image && <img src={s.image} alt="" />}</div>
+                  <div className="rtext">
+                    {s.category && <div className="kicker">{s.category}</div>}
+                    <h3>{s.title}</h3>
+                    {s.summary && <p>{clip(s.summary, 120)}</p>}
+                  </div>
+                </a>
               ))}
             </div>
           </>
