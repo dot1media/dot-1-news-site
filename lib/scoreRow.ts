@@ -32,6 +32,62 @@ function clamp(v: unknown): number {
   return Math.max(0, Math.min(2, n));
 }
 
+// The four indices, each with its five indicator columns and the display names
+// the app and the Score-a-Story tool use, in the same order. Kept here so the
+// per-indicator breakdown reads identically everywhere it is shown.
+export interface IndexBreakdown {
+  key: 'BAI' | 'PSI' | 'SCI' | 'HII';
+  name: string;
+  color: string;
+  total: number; // 0-10
+  indicators: { label: string; value: number }[]; // value 0-2
+}
+
+const BREAKDOWN_DEF: { key: IndexBreakdown['key']; name: string; color: string; items: [string, string][] }[] = [
+  { key: 'BAI', name: 'Biblical Alignment', color: '#B81616', items: [
+    ['Scriptural Consistency', 'bai_scriptural_consistency'],
+    ['Doctrinal Integrity', 'bai_doctrinal_integrity'],
+    ['Moral Framework', 'bai_moral_framework'],
+    ['Anthropology', 'bai_anthropology'],
+    ['Teleology', 'bai_teleology'],
+  ] },
+  { key: 'PSI', name: 'Prophetic Significance', color: '#8A6A17', items: [
+    ['Textual Linkage', 'psi_textual_linkage'],
+    ['Eschatological Category Fit', 'psi_eschatological_fit'],
+    ['Historical Pattern Continuity', 'psi_historical_continuity'],
+    ['Spiritual Discernment Impact', 'psi_spiritual_impact'],
+    ['Theological Restraint', 'psi_theological_restraint'],
+  ] },
+  { key: 'SCI', name: 'Source Credibility', color: '#1B6B5A', items: [
+    ['Primary Source Access', 'sci_primary_source_access'],
+    ['Verification & Corroboration', 'sci_verification'],
+    ['Transparency & Accountability', 'sci_transparency'],
+    ['Track Record Accuracy', 'sci_track_record'],
+    ['Editorial Standards', 'sci_editorial_standards'],
+  ] },
+  { key: 'HII', name: 'Humanities Impact', color: '#2A4A7F', items: [
+    ['Human Dignity Recognition', 'hii_human_dignity'],
+    ['Compassion & Empathy', 'hii_compassion_empathy'],
+    ['Societal Impact Scope', 'hii_societal_impact'],
+    ['Justice & Responsibility', 'hii_justice_responsibility'],
+    ['Christ-Modeled Care Orientation', 'hii_christ_modeled_care'],
+  ] },
+];
+
+/** Per-indicator breakdown of a scored row, grouped by index. */
+export function breakdownFromRow(row: Record<string, any>): IndexBreakdown[] {
+  return BREAKDOWN_DEF.map((d) => {
+    const indicators = d.items.map(([label, col]) => ({ label, value: clamp(row[col]) }));
+    return {
+      key: d.key,
+      name: d.name,
+      color: d.color,
+      total: indicators.reduce((s, i) => s + i.value, 0),
+      indicators,
+    };
+  });
+}
+
 /** Build a StoryScore from a DB row that includes the 20 indicator columns. */
 export function scoreFromRow(row: Record<string, any>): StoryScore {
   // If the indicator columns are absent/null, treat as unscored.

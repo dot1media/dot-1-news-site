@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
-import { scoreFromRow, StoryScore } from '@/lib/scoreRow';
+import { scoreFromRow, breakdownFromRow, StoryScore, IndexBreakdown } from '@/lib/scoreRow';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { isImageUrl, isVideoUrl, videoMime } from '@/lib/media';
@@ -22,6 +22,7 @@ interface ShareItem {
   verificationStatus?: string | null;
   content?: string | null;
   score?: StoryScore | null;
+  scoreBreakdown?: IndexBreakdown[] | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
@@ -55,7 +56,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x) };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x) };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -139,6 +140,28 @@ const CSS = `.piece{max-width:760px;margin:0 auto;padding:44px 0 20px;}
 .callout p{margin:0 auto 22px;font-size:15.5px;line-height:1.7;color:#33302B;max-width:520px;}
 .callout .btn{display:inline-block;background:#B81616;color:#fff;font-size:15.5px;font-weight:bold;padding:16px 30px;border-radius:8px;}
 .callout .fine{margin:14px 0 0;font-size:12.5px;color:#767065;}
+.scorecard{margin:20px 0 4px;}
+.scorecard>summary{list-style:none;cursor:pointer;margin:0 !important;}
+.scorecard>summary::-webkit-details-marker{display:none;}
+.scorecard>summary{outline:none;}
+.scorecard>summary:focus-visible{box-shadow:0 0 0 2px #B81616;}
+.scorecard .ls-toggle{align-self:center;white-space:nowrap;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;color:#B81616;display:inline-flex;align-items:center;gap:5px;}
+.scorecard .ls-toggle:after{content:'\\203A';font-size:15px;transition:transform .2s ease;display:inline-block;}
+.scorecard[open] .ls-toggle:after{transform:rotate(90deg);}
+.scorebreak{border:1px solid #E0D7C8;border-top:none;background:#FBF8F2;padding:6px 20px 18px;}
+.sb-idx{padding:16px 0 4px;border-top:1px solid #EDE6D8;}
+.sb-idx:first-child{border-top:none;}
+.sb-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sb-tag{font-size:11px;font-weight:bold;letter-spacing:1px;color:#fff;padding:3px 8px;border-radius:4px;}
+.sb-name{font-size:15px;font-weight:bold;color:#1B1917;flex:1;min-width:0;}
+.sb-total{font-variant-numeric:tabular-nums;font-size:13px;color:#33302B;white-space:nowrap;}
+.sb-inds{display:flex;flex-direction:column;gap:7px;}
+.sb-ind{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:14px;color:#33302B;}
+.sb-lab{min-width:0;}
+.sb-pips{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;}
+.sb-pip{width:9px;height:9px;border-radius:50%;background:#E0D7C8;display:inline-block;}
+.sb-val{font-variant-numeric:tabular-nums;font-size:12.5px;color:#767065;margin-left:5px;min-width:9px;text-align:right;}
+.sb-note{margin:16px 0 0;font-size:12.5px;line-height:1.6;color:#767065;font-style:italic;}
 .backline{max-width:760px;margin:34px auto 0;padding-top:20px;border-top:1px solid #E6DED1;font-size:13px;color:#B81616;font-weight:bold;}
 @media(max-width:640px){.piece{padding:28px 0 12px;}.piece h1{font-size:29px;}.piece .sum{font-size:17px;}.callout{padding:26px 20px;}.callout h3{font-size:21px;}}`;
 
@@ -211,18 +234,48 @@ export default async function SharePage({ params }: { params: { kind: string; id
             </div>
           )}
           {item.kind === 'article' && item.score?.hasScore && (
-            <div className="leadscore">
-              <div className="ls-num">{item.score.composite.toFixed(1)}<span>/10</span></div>
-              <div className="ls-detail">
-                <div className="ls-label">D1&#8209;4LS Score{item.score.confidence ? ` · ${item.score.confidence}` : ''}</div>
-                <div className="ls-bars">
-                  <span title="Biblical Alignment">BAI {item.score.bai}</span>
-                  <span title="Prophetic Significance">PSI {item.score.psi}</span>
-                  <span title="Source Credibility">SCI {item.score.sci}</span>
-                  <span title="Humanities Impact">HII {item.score.hii}</span>
+            <details className="scorecard">
+              <summary className="leadscore">
+                <div className="ls-num">{item.score.composite.toFixed(1)}<span>/10</span></div>
+                <div className="ls-detail">
+                  <div className="ls-label">D1&#8209;4LS Score{item.score.confidence ? ` · ${item.score.confidence}` : ''}</div>
+                  <div className="ls-bars">
+                    <span title="Biblical Alignment">BAI {item.score.bai}</span>
+                    <span title="Prophetic Significance">PSI {item.score.psi}</span>
+                    <span title="Source Credibility">SCI {item.score.sci}</span>
+                    <span title="Humanities Impact">HII {item.score.hii}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
+                <span className="ls-toggle" aria-hidden="true">Why this score</span>
+              </summary>
+              {item.scoreBreakdown && (
+                <div className="scorebreak">
+                  {item.scoreBreakdown.map((idx) => (
+                    <div className="sb-idx" key={idx.key}>
+                      <div className="sb-head">
+                        <span className="sb-tag" style={{ background: idx.color }}>{idx.key}</span>
+                        <span className="sb-name">{idx.name}</span>
+                        <b className="sb-total">{idx.total} / 10</b>
+                      </div>
+                      <div className="sb-inds">
+                        {idx.indicators.map((ind) => (
+                          <div className="sb-ind" key={ind.label}>
+                            <span className="sb-lab">{ind.label}</span>
+                            <span className="sb-pips" aria-label={`${ind.value} of 2`}>
+                              {[0, 1, 2].map((n) => (
+                                <span key={n} className={'sb-pip' + (n < ind.value ? ' on' : '')} style={n < ind.value ? { background: idx.color } : undefined} />
+                              ))}
+                              <b className="sb-val">{ind.value}</b>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <p className="sb-note">Each measure is built from five indicators, each scored 0, 1, or 2. A high composite does not mean a story is true, and a low one does not mean it is false. The number is a starting point for thinking, not a substitute for it.</p>
+                </div>
+              )}
+            </details>
           )}
           {item.kind === 'article' ? (() => {
             const V: Record<string, { label: string; color: string }> = {
