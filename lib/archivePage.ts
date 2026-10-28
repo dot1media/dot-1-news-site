@@ -35,10 +35,10 @@ const CSS = `
 .archive-hero p{margin:0;font-size:16.5px;line-height:1.66;color:${C.body};}
 
 .searchbar{max-width:820px;margin:26px auto 8px;display:flex;gap:10px;}
-.searchbar input{flex:1;font-family:Georgia,serif;font-size:16px;color:${C.ink};
+.searchbar input{flex:1;font-family:var(--font-body),Georgia,serif;font-size:16px;color:${C.ink};
   background:${C.paper};border:1px solid ${C.rule};padding:14px 15px;border-radius:8px;}
 .searchbar input:focus{outline:none;border-color:${C.red};}
-.searchbar button{font-family:Georgia,serif;font-size:15px;font-weight:bold;color:#fff;
+.searchbar button{font-family:var(--font-body),Georgia,serif;font-size:15px;font-weight:bold;color:#fff;
   background:${C.red};border:none;padding:0 22px;border-radius:8px;cursor:pointer;}
 .searchnote{max-width:820px;margin:0 auto 8px;font-size:13.5px;color:${C.muted};font-style:italic;}
 .searchnote a{color:${C.red};font-weight:bold;font-style:normal;}

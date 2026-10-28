@@ -63,12 +63,12 @@ const CSS = `
 .field{margin:26px 0 20px;}
 .field label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
   color:${C.goldText};font-weight:bold;margin-bottom:9px;}
-.field input{width:100%;font-family:Georgia,serif;font-size:16px;color:${C.ink};
+.field input{width:100%;font-family:var(--font-body),Georgia,serif;font-size:16px;color:${C.ink};
   background:${C.paper};border:1px solid ${C.rule};padding:14px 15px;border-radius:8px;}
 .field input:focus{outline:none;border-color:${C.red};}
 
 .modebar{display:flex;gap:8px;margin:0 0 8px;}
-.modebtn{flex:1;font-family:Georgia,serif;font-size:13.5px;font-weight:bold;
+.modebtn{flex:1;font-family:var(--font-body),Georgia,serif;font-size:13.5px;font-weight:bold;
   padding:11px 12px;border-radius:8px;border:1px solid ${C.rule};background:${C.paper};
   color:${C.body};cursor:pointer;}
 .modebtn.on{background:${C.ink};color:${C.paper};border-color:${C.ink};}
@@ -112,7 +112,7 @@ const CSS = `
 .bar .track{height:9px;border-radius:5px;background:${C.hair};overflow:hidden;}
 .bar .fill{height:100%;border-radius:5px;transition:width .25s ease;}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
-.btn{font-family:Georgia,serif;font-size:15px;font-weight:bold;padding:14px 22px;border-radius:8px;
+.btn{font-family:var(--font-body),Georgia,serif;font-size:15px;font-weight:bold;padding:14px 22px;border-radius:8px;
   border:none;cursor:pointer;text-decoration:none;display:inline-block;}
 .btn.red{background:${C.red};color:#fff;}
 .btn.ghost{background:${C.paper};color:${C.ink};border:1px solid ${C.rule};}
@@ -124,7 +124,7 @@ const CSS = `
 .submit p{margin:0 0 14px;font-size:14px;line-height:1.6;color:${C.muted};}
 .submit-field{margin:0 0 12px;}
 .submit-field label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${C.goldText};font-weight:bold;margin-bottom:8px;}
-.submit-field input{width:100%;font-family:Georgia,serif;font-size:15px;color:${C.ink};background:${C.paper};border:1px solid ${C.rule};padding:12px 14px;border-radius:8px;}
+.submit-field input{width:100%;font-family:var(--font-body),Georgia,serif;font-size:15px;color:${C.ink};background:${C.paper};border:1px solid ${C.rule};padding:12px 14px;border-radius:8px;}
 .submit-field input:focus{outline:none;border-color:${C.red};}
 .submit-msg{font-size:14px;line-height:1.5;font-style:italic;margin-top:12px !important;}
 .submit-msg.ok{color:${C.goldText};}

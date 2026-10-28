@@ -1,7 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { Bodoni_Moda, Fraunces, IBM_Plex_Mono } from 'next/font/google';
 import { SITE_URL } from '@/lib/theme';
 import './globals.css';
+
+// Brand faces: Bodoni Moda for the nameplate and headlines, Fraunces for
+// reading, IBM Plex Mono for the tracked labels. Loaded via next/font so they
+// are self-hosted, preloaded, and shift-free, and exposed as CSS variables that
+// globals.css drives everything from.
+const display = Bodoni_Moda({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
+const body = Fraunces({ subsets: ['latin'], style: ['normal', 'italic'], display: 'swap', variable: '--font-body' });
+const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap', variable: '--font-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -24,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
         {children}
 

@@ -36,10 +36,14 @@ export function clip(s: string, n: number): string {
 }
 
 export const SITE_CSS = `
+:root{--font-display:'Bodoni Moda',Georgia,'Times New Roman',serif;--font-body:'Fraunces',Georgia,'Times New Roman',serif;--font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;}
 *,*::before,*::after{box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
 body{margin:0;background:${C.page};color:${C.body};
-  font-family:Georgia,'Times New Roman',serif;line-height:1.5;}
+  font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.bar .wm,.foot .wm,.masthead h1{font-family:var(--font-display);}
+.nav a,.getapp,.masthead .tag,.dateline,.secHead h2,.kicker,.foot h4,.foot .motto{font-family:var(--font-mono);}
+.masthead h1{letter-spacing:.5px;}
 a{color:inherit;text-decoration:none;}
 img{max-width:100%;display:block;}
 
@@ -205,6 +209,9 @@ ${opts.image ? `<meta property="og:image" content="${esc(opts.image)}">
 ${opts.image ? `<meta name="twitter:image" content="${esc(opts.image)}">` : ''}
 <meta name="apple-itunes-app" content="app-id=6757212352">
 <meta name="theme-color" content="${C.paper}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..800&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>${SITE_CSS}${opts.extraCss || ''}</style></head>
 <body>${opts.inner}</body></html>`;
 }

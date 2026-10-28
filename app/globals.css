@@ -1,7 +1,8 @@
 *,*::before,*::after{box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
 body{margin:0;background:#EFEAE0;color:#33302B;
-  font-family:Georgia,'Times New Roman',serif;line-height:1.5;}
+  font-family:var(--font-body),Georgia,'Times New Roman',serif;line-height:1.5;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
 a{color:inherit;text-decoration:none;}
 img{max-width:100%;display:block;}
 
@@ -149,4 +150,12 @@ img{max-width:100%;display:block;}
   .leadscore{gap:14px;padding:14px 16px;}
   .leadscore .ls-num{font-size:30px;}
 }
+
+/* ---- brand typography: Bodoni Moda (display) / Fraunces (body) / IBM Plex Mono (labels) ---- */
+.bar .wm,.foot .wm,.masthead h1,.lead h2,.story h3,.reel h3,.promo h3,.piece h1,.callout h3,.leadscore .ls-num{
+  font-family:var(--font-display),Georgia,'Times New Roman',serif;}
+.nav a,.getapp,.masthead .tag,.dateline,.secHead h2,.kicker,.why .h,.foot h4,.foot .motto,.leadscore .ls-label,.leadscore .ls-bars span,.reel .play,.promo .btn,.callout .btn,.backline{
+  font-family:var(--font-mono),ui-monospace,SFMono-Regular,monospace;}
+.masthead h1{letter-spacing:.5px;}
+.bar .wm{letter-spacing:.3px;}
 
