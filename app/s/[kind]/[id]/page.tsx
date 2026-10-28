@@ -26,6 +26,15 @@ interface ShareItem {
   scoreBreakdown?: IndexBreakdown[] | null;
   publishedAt?: string | null;
   updatedAt?: string | null;
+  author?: string | null;
+}
+
+// A published-date formatter in Alaska time, e.g. "October 27, 2026".
+function fmtDate(d?: string | null): string {
+  if (!d) return '';
+  try {
+    return new Date(d).toLocaleDateString('en-US', { timeZone: 'America/Anchorage', year: 'numeric', month: 'long', day: 'numeric' });
+  } catch { return ''; }
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
@@ -42,7 +51,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
-               COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at
+               COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       } catch {
@@ -51,15 +60,15 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                  bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
                  psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                  sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
-                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care, reviewed_at, created_at
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care, reviewed_at, created_at, author
             FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         } catch {
-          const r = await sql`SELECT title, summary, content, image, category, editor_note, reviewed_at, created_at FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+          const r = await sql`SELECT title, summary, content, image, category, editor_note, reviewed_at, created_at, author FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -213,6 +222,12 @@ export default async function SharePage({ params }: { params: { kind: string; id
         <article className="piece">
           <div className="kicker">{label}</div>
           <h1>{item.title}</h1>
+          {item.kind === 'article' && (
+            <p className="byline">
+              By {item.author || 'Dot 1 Newsroom'}
+              {item.publishedAt ? <> &middot; <time dateTime={new Date(item.publishedAt).toISOString()}>{fmtDate(item.publishedAt)}</time></> : null}
+            </p>
+          )}
           {item.credit && (
             <p className="credit">
               {item.kind === 'video' ? 'Produced by' : 'Photograph'} &middot;{' '}
