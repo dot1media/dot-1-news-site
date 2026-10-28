@@ -16,7 +16,7 @@ export function organizationNode() {
     image: `${SITE_URL}/news-logo.png`,
     slogan: 'A declared standpoint, not a hidden one.',
     foundingDate: '2025',
-    sameAs: ['https://instagram.com/dot1news', 'https://dot1.media'],
+    sameAs: ['https://instagram.com/dot1news', 'https://facebook.com/dot1news', 'https://dot1.media'],
     areaServed: { '@type': 'State', name: 'Alaska' },
     parentOrganization: { '@type': 'Organization', name: 'Dot One Media', url: 'https://dot1.media' },
   };

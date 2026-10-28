@@ -57,6 +57,10 @@ img{max-width:100%;display:block;}
 .foot .wm span{color:var(--crimson);}
 .foot .motto{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;line-height:1.8;margin-bottom:16px;}
 .foot .blurb{font-size:13.5px;line-height:1.75;max-width:330px;}
+.foot .social{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap;}
+.foot .social a{display:inline-block;font-size:13px;border-bottom:1px solid rgba(243,238,228,.22);line-height:1.4;}
+.foot .social a:hover{border-bottom-color:#F3EEE4;}
+.foot .social .handle{font-size:12px;letter-spacing:.5px;color:#6f675c;}
 .legal{border-top:1px solid #2A2621;}
 .legal .in{max-width:1180px;margin:0 auto;padding:20px 28px 34px;
   display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:12px;color:#6B655C;}

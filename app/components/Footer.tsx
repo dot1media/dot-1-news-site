@@ -10,6 +10,11 @@ export default function Footer() {
           <div className="wm">DOT&nbsp;<NewsLogo h="1.3em" />&nbsp;NEWS</div>
           <div className="motto">A declared standpoint, not a hidden one.</div>
           <p className="blurb">A few stories each day, each with the reason it ran, and an edition that ends on purpose. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
+          <div className="social">
+            <a href="https://instagram.com/dot1news" target="_blank" rel="me noopener noreferrer" aria-label="Dot 1 News on Instagram">Instagram</a>
+            <a href="https://facebook.com/dot1news" target="_blank" rel="me noopener noreferrer" aria-label="Dot 1 News on Facebook">Facebook</a>
+            <span className="handle">@dot1news</span>
+          </div>
         </div>
         <div>
           <h4>Read</h4>
