@@ -1,7 +1,25 @@
 import type { Metadata } from 'next';
 import { SITE_URL } from '@/lib/theme';
+import { organizationNode } from '@/lib/seo';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+
+// About is the E-E-A-T anchor: declare the publisher entity here too, with an
+// AboutPage pointing at it, so search engines tie the masthead to the org.
+const aboutGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    organizationNode(),
+    {
+      '@type': 'AboutPage',
+      '@id': `${SITE_URL}/about#page`,
+      url: `${SITE_URL}/about`,
+      name: 'About Dot 1 News',
+      about: { '@id': `${SITE_URL}/#organization` },
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+    },
+  ],
+};
 
 export const metadata: Metadata = {
   title: 'About & Masthead · Dot 1 News',
@@ -12,6 +30,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutGraph) }} />
       <Header />
       <main className="shell">
         <article className="docpage">

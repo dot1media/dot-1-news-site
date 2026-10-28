@@ -8,9 +8,9 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
 
   useEffect(() => {
+    // Light is the default; Ink applies only when the reader has chosen it.
     const attr = document.documentElement.getAttribute('data-theme') as 'light' | 'dark' | null;
-    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    setTheme(attr || sys);
+    setTheme(attr === 'dark' ? 'dark' : 'light');
   }, []);
 
   const toggle = () => {
