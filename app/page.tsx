@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
 // description, and the canonical.
 export const metadata: Metadata = {
   title: 'Dot 1 News — Human-Edited Alaska News, Daily | Wasilla',
-  description: 'A human-edited daily edition of Alaska and national news from Wasilla. Every story is chosen and approved by an editor, tells you why it ran, and is scored across four measures. Veteran-owned and faith-driven.',
+  description: 'A daily edition of Alaska and national news from Wasilla: a few stories, each with the reason it ran, scored across four measures. Veteran-owned and faith-driven.',
   alternates: { canonical: SITE_URL + '/' },
   keywords: ['Alaska news', 'Wasilla news', 'Mat-Su news', 'Christian news', 'faith-based news', 'daily news digest', 'Dot 1 News'],
 };
@@ -255,7 +255,7 @@ export default async function Home() {
         {total === 0 && (
           <>
             <div className="secHead"><h2>Today</h2><div className="line" /></div>
-            <p style={{ fontSize: 17, lineHeight: 1.7 }}>Today&rsquo;s edition is still being read and approved. Nothing runs here until a person has chosen it, so please check back shortly.</p>
+            <p style={{ fontSize: 17, lineHeight: 1.7 }}>Today&rsquo;s edition is still being prepared. Please check back shortly.</p>
           </>
         )}
 

@@ -23,7 +23,7 @@ const aboutGraph = {
 
 export const metadata: Metadata = {
   title: 'About & Masthead · Dot 1 News',
-  description: 'Dot 1 News is a small, human-edited daily edition from Wasilla, Alaska, a veteran-owned, faith-driven publication of Dot One Media. Who we are and who runs it.',
+  description: 'Dot 1 News is a small daily edition from Wasilla, Alaska, a veteran-owned, faith-driven publication of Dot One Media. Who we are and who runs it.',
   alternates: { canonical: SITE_URL + '/about' },
 };
 
@@ -36,7 +36,7 @@ export default function AboutPage() {
         <article className="docpage">
           <div className="kicker">About</div>
           <h1>About Dot 1 News</h1>
-          <p className="lead">A small, human-edited daily edition from Wasilla, Alaska. A few stories, chosen by a person, each carrying the reason it ran, and then the edition ends.</p>
+          <p className="lead">A small daily edition from Wasilla, Alaska. A few stories, each carrying the reason it ran, and then the edition ends.</p>
 
           <h2>Who we are</h2>
           <p>Dot 1 News is a veteran-owned, faith-driven newsroom and a publication of Dot One Media (DOT ONE LLC). We are unapologetically Christ-centered, and we tell you so on purpose. Naming our lens is what lets you weigh our reporting honestly, rather than guessing at a standpoint we tried to hide.</p>
@@ -45,7 +45,7 @@ export default function AboutPage() {
           <h2>What makes us different</h2>
           <ul>
             <li>The edition ends. It is not an endless feed, and nothing here is engineered to hold your attention longer than a story deserves.</li>
-            <li>Every story is approved by a person, and every story tells you plainly why it ran.</li>
+            <li>Every story carries the reason it ran, in plain language.</li>
             <li>Every story is scored and carries a verification status you can see, and every story states how it was made. The full detail is on our <a className="ln" href="/standards">Standards &amp; Ethics</a> page.</li>
           </ul>
 

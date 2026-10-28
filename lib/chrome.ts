@@ -150,7 +150,7 @@ export function footer(): string {
       <div>
         <div class="wm">DOT&nbsp;${mark('1.3em')}&nbsp;NEWS</div>
         <div class="motto">A declared standpoint, not a hidden one.</div>
-        <p class="blurb">A small, human-edited daily paper. Every story is read and approved by a person before it reaches you, and every story tells you why it ran. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
+        <p class="blurb">A few stories each day, each with the reason it ran, and an edition that ends on purpose. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
       </div>
       <div>
         <h4>Read</h4>

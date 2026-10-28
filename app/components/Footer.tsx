@@ -9,7 +9,7 @@ export default function Footer() {
         <div>
           <div className="wm">DOT&nbsp;<NewsLogo h="1.3em" />&nbsp;NEWS</div>
           <div className="motto">A declared standpoint, not a hidden one.</div>
-          <p className="blurb">A small, human-edited daily paper. Every story is read and approved by a person before it reaches you, and every story tells you why it ran. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
+          <p className="blurb">A few stories each day, each with the reason it ran, and an edition that ends on purpose. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.</p>
         </div>
         <div>
           <h4>Read</h4>

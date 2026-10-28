@@ -28,7 +28,7 @@ export function websiteNode() {
     '@id': WEBSITE_ID,
     url: SITE_URL + '/',
     name: 'Dot 1 News',
-    description: 'A human-edited daily edition from Wasilla, Alaska. Every story is approved by a person and tells you why it ran.',
+    description: 'A daily edition from Wasilla, Alaska. A few stories, each with the reason it ran, scored across four measures.',
     inLanguage: 'en-US',
     publisher: { '@id': ORG_ID },
     potentialAction: {

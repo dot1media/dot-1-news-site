@@ -27,6 +27,40 @@ interface ShareItem {
   publishedAt?: string | null;
   updatedAt?: string | null;
   author?: string | null;
+  tags?: string[] | null;
+}
+
+// Tags for the foot of an article: the editor's stored tags when present,
+// otherwise the category plus the proper nouns the piece actually names (people,
+// places, organizations). Each links into the archive search. Heuristic but
+// safe: it skips sentence-initial capitals so it picks up real entities, not
+// the first word of every sentence.
+const TAG_STOP = new Set(['The', 'A', 'An', 'This', 'That', 'These', 'Those', 'It', 'But', 'And', 'For', 'Because', 'When', 'While', 'After', 'Before', 'According', 'Readers', 'Here', 'There', 'They', 'We', 'He', 'She', 'His', 'Her', 'Their', 'Our', 'Its', 'As', 'If', 'So', 'Yet', 'Mr', 'Ms', 'Mrs', 'Dr']);
+
+function deriveTags(item: ShareItem): string[] {
+  const out = new Set<string>();
+  if (item.category) out.add(item.category);
+  if (Array.isArray(item.tags)) item.tags.forEach((t) => { if (t && String(t).trim()) out.add(String(t).trim()); });
+
+  const text = `${item.summary || ''} ${(item.content || '').slice(0, 1800)}`;
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  for (const sent of sentences) {
+    const words = sent.trim().split(/\s+/);
+    let i = 1; // skip the sentence-initial word
+    const cap = (w: string) => /^[A-Z][A-Za-z.&'’-]+$/.test(w);
+    while (i < words.length) {
+      if (cap(words[i]) && !TAG_STOP.has(words[i])) {
+        const seq: string[] = [];
+        let j = i;
+        while (j < words.length && cap(words[j])) { seq.push(words[j].replace(/[.,;:]$/, '')); j++; }
+        const term = seq.join(' ').replace(/[^\w\s&'’-]/g, '').trim();
+        if (term.length > 2 && !TAG_STOP.has(term)) out.add(term);
+        i = j;
+      } else i++;
+    }
+    if (out.size >= 9) break;
+  }
+  return Array.from(out).slice(0, 7);
 }
 
 // A published-date formatter in Alaska time, e.g. "October 27, 2026".
@@ -51,7 +85,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
-               COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author
+               COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author, tags
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       } catch {
@@ -60,15 +94,15 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                  bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
                  psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                  sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
-                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care, reviewed_at, created_at, author
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care, reviewed_at, created_at, author, tags
             FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         } catch {
-          const r = await sql`SELECT title, summary, content, image, category, editor_note, reviewed_at, created_at, author FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+          const r = await sql`SELECT title, summary, content, image, category, editor_note, reviewed_at, created_at, author, tags FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author, tags: x.tags };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -178,6 +212,10 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .sb-pip{width:9px;height:9px;border-radius:50%;background:var(--rule2);display:inline-block;}
 .sb-val{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted);margin-left:5px;min-width:9px;text-align:right;}
 .sb-note{margin:16px 0 0;font-size:12.5px;line-height:1.6;color:var(--muted);font-style:italic;}
+.tags{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:26px 0 2px;padding-top:20px;border-top:1px solid var(--imgbg);}
+.tags .tags-label{font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-right:3px;}
+.tags .tag{font-family:var(--font-mono),monospace;font-size:12px;letter-spacing:.4px;color:var(--body);background:var(--raised);border:1px solid var(--rule2);padding:5px 11px;border-radius:999px;transition:all .15s;}
+.tags .tag:hover{color:#fff;background:var(--crimson);border-color:var(--crimson);}
 .backline{max-width:760px;margin:34px auto 0;padding-top:20px;border-top:1px solid var(--imgbg);font-size:13px;color:var(--crimson);font-weight:bold;}
 @media(max-width:640px){.piece{padding:28px 0 12px;}.piece h1{font-size:29px;}.piece .sum{font-size:17px;}.callout{padding:26px 20px;}.callout h3{font-size:21px;}}`;
 
@@ -197,7 +235,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
           </article>
           <section className="callout">
             <h3>Read today&rsquo;s edition.</h3>
-            <p>A few stories, chosen by a person, each with the reason it ran.</p>
+            <p>A few stories, each with the reason it ran.</p>
             <a className="btn" href="/">Open today&rsquo;s edition &rsaquo;</a>
             <p className="fine">Or <a href={APP_STORE} style={{ color: 'var(--crimson)', fontWeight: 'bold' }}>get the app</a>.</p>
           </section>
@@ -320,10 +358,21 @@ export default async function SharePage({ params }: { params: { kind: string; id
           })() : (
             <div className="mark"><span className="dot" /> Approved by an editor</div>
           )}
+          {item.kind === 'article' && (() => {
+            const tags = deriveTags(item);
+            return tags.length ? (
+              <div className="tags">
+                <span className="tags-label">Related</span>
+                {tags.map((t) => (
+                  <a className="tag" key={t} href={`/archive?q=${encodeURIComponent(t)}`}>{t}</a>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
-          <p>This story is part of today&rsquo;s edition in Dot 1 News. A few stories, chosen by a person, each with the reason it ran, and then it ends.</p>
+          <p>This story is part of today&rsquo;s edition in Dot 1 News. A few stories, each with the reason it ran, and then it ends.</p>
           <a className="btn" href={APP_STORE}>Get Dot 1 News free &rsaquo;</a>
           <p className="fine">Free on the App Store.</p>
         </section>
