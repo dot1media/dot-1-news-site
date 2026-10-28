@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
+import { scoreFromRow, StoryScore } from '@/lib/scoreRow';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { isImageUrl, isVideoUrl, videoMime } from '@/lib/media';
@@ -20,21 +21,41 @@ interface ShareItem {
   videoUrl?: string | null;
   verificationStatus?: string | null;
   content?: string | null;
+  score?: StoryScore | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
   try {
     if (kind === 'n' || kind === 'article') {
-      // verification_status queried defensively; a missing column reads as verified.
+      // verification_status and the 20 D1-4LS indicator columns are set by the
+      // editorial platform; queried defensively so a not-yet-migrated column never
+      // breaks the page. Missing verification reads as verified; missing indicators
+      // read as unscored and the badge simply does not render.
       let x: any;
       try {
-        const r = await sql`SELECT title, summary, content, image, category, editor_note, COALESCE(verification_status, 'verified') AS verification_status FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+        const r = await sql`SELECT title, summary, content, image, category, editor_note, score_confidence,
+               bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
+               psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
+               sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
+               hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
+               COALESCE(verification_status, 'verified') AS verification_status
+          FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       } catch {
-        const r = await sql`SELECT title, summary, content, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
-        x = r[0];
+        try {
+          const r = await sql`SELECT title, summary, content, image, category, editor_note, score_confidence,
+                 bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
+                 psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
+                 sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care
+            FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+          x = r[0];
+        } catch {
+          const r = await sql`SELECT title, summary, content, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+          x = r[0];
+        }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified' };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x) };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -187,6 +208,20 @@ export default async function SharePage({ params }: { params: { kind: string; id
             <div className="why">
               <div className="h">Why We Ran This</div>
               <div className="t">{item.editorNote}</div>
+            </div>
+          )}
+          {item.kind === 'article' && item.score?.hasScore && (
+            <div className="leadscore">
+              <div className="ls-num">{item.score.composite.toFixed(1)}<span>/10</span></div>
+              <div className="ls-detail">
+                <div className="ls-label">D1&#8209;4LS Score{item.score.confidence ? ` · ${item.score.confidence}` : ''}</div>
+                <div className="ls-bars">
+                  <span title="Biblical Alignment">BAI {item.score.bai}</span>
+                  <span title="Prophetic Significance">PSI {item.score.psi}</span>
+                  <span title="Source Credibility">SCI {item.score.sci}</span>
+                  <span title="Humanities Impact">HII {item.score.hii}</span>
+                </div>
+              </div>
             </div>
           )}
           {item.kind === 'article' ? (() => {
