@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
 import { scoreFromRow, breakdownFromRow, StoryScore, IndexBreakdown } from '@/lib/scoreRow';
+import { newsArticleGraph, photoGraph, videoGraph } from '@/lib/seo';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { isImageUrl, isVideoUrl, videoMime } from '@/lib/media';
@@ -23,6 +24,8 @@ interface ShareItem {
   content?: string | null;
   score?: StoryScore | null;
   scoreBreakdown?: IndexBreakdown[] | null;
+  publishedAt?: string | null;
+  updatedAt?: string | null;
 }
 
 async function getItem(kind: string, id: string): Promise<ShareItem | null> {
@@ -39,7 +42,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
-               COALESCE(verification_status, 'verified') AS verification_status
+               COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
       } catch {
@@ -48,40 +51,40 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                  bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
                  psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                  sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
-                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care
+                 hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care, reviewed_at, created_at
             FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         } catch {
-          const r = await sql`SELECT title, summary, content, image, category, editor_note FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
+          const r = await sql`SELECT title, summary, content, image, category, editor_note, reviewed_at, created_at FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x) };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
       try {
-        const r = await sql`SELECT caption, full_description, image, photographer, credit_url FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        const r = await sql`SELECT caption, full_description, image, photographer, credit_url, created_at FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
         x = r[0];
       } catch {
-        const r = await sql`SELECT caption, full_description, image, photographer FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        const r = await sql`SELECT caption, full_description, image, photographer, created_at FROM photos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
         x = r[0];
       }
-      if (x) return { kind: 'photo', title: x.caption || 'A photograph', summary: x.full_description, image: x.image, credit: x.photographer, creditUrl: x.credit_url || null };
+      if (x) return { kind: 'photo', title: x.caption || 'A photograph', summary: x.full_description, image: x.image, credit: x.photographer, creditUrl: x.credit_url || null, publishedAt: x.created_at };
     } else if (kind === 'v' || kind === 'video') {
       let x: any;
       try {
-        const r = await sql`SELECT title, description, thumbnail, video_url, producer, credit_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        const r = await sql`SELECT title, description, thumbnail, video_url, producer, credit_url, created_at FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
         x = r[0];
       } catch {
-        const r = await sql`SELECT title, description, thumbnail, video_url FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
+        const r = await sql`SELECT title, description, thumbnail, video_url, created_at FROM videos WHERE id = ${id} AND COALESCE(status, 'published') NOT IN ('archived', 'rejected', 'deleted') LIMIT 1`;
         x = r[0];
       }
       if (x) return {
         kind: 'video', title: x.title, summary: x.description,
         image: isImageUrl(x.thumbnail) ? x.thumbnail : null,
         videoUrl: x.video_url || (isVideoUrl(x.thumbnail) ? x.thumbnail : null),
-        credit: x.producer || null, creditUrl: x.credit_url || null,
+        credit: x.producer || null, creditUrl: x.credit_url || null, publishedAt: x.created_at,
       };
     }
   } catch (e: any) {
@@ -196,8 +199,14 @@ export default async function SharePage({ params }: { params: { kind: string; id
     : (item.category || 'Dot 1 News');
   const cta = 'Carry the edition with you';
 
+  const seo = { id: params.id, title: item.title, summary: item.summary, image: item.image, category: item.category, publishedAt: item.publishedAt, updatedAt: item.updatedAt };
+  const graph = item.kind === 'photo' ? photoGraph(seo)
+    : item.kind === 'video' ? videoGraph({ ...seo, videoUrl: item.videoUrl })
+    : newsArticleGraph(seo);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }} />
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <Header />
       <main className="shell">

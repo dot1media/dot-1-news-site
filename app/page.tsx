@@ -1,6 +1,8 @@
 import { sql } from '@/lib/db';
 import NewsLogo from "@/app/components/NewsLogo";
-import { clip, alaskaDate, APP_STORE } from '@/lib/theme';
+import type { Metadata } from 'next';
+import { clip, alaskaDate, APP_STORE, SITE_URL } from '@/lib/theme';
+import { homeGraph } from '@/lib/seo';
 import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -9,6 +11,17 @@ import { isImageUrl, isVideoUrl } from '@/lib/media';
 // Always render fresh from the shared database so the site reflects what the
 // app just published. Revalidate window keeps it fast without going stale.
 export const dynamic = 'force-dynamic';
+
+// Home-page metadata tuned for discovery: the query people actually search
+// (Alaska news), the place, and what makes it distinct. The layout supplies the
+// shared Open Graph/Twitter defaults; this sets the indexable title, the
+// description, and the canonical.
+export const metadata: Metadata = {
+  title: 'Dot 1 News — Human-Edited Alaska News, Daily | Wasilla',
+  description: 'A human-edited daily edition of Alaska and national news from Wasilla. Every story is chosen and approved by an editor, tells you why it ran, and is scored across four measures. Veteran-owned and faith-driven.',
+  alternates: { canonical: SITE_URL + '/' },
+  keywords: ['Alaska news', 'Wasilla news', 'Mat-Su news', 'Christian news', 'faith-based news', 'daily news digest', 'Dot 1 News'],
+};
 
 interface ReaderItem {
   id: string;
@@ -136,6 +149,7 @@ export default async function Home() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph()) }} />
       <Header />
 
       <div className="masthead"><div className="in">
