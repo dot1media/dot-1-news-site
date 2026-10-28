@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Dot 1 News">
+  <rect width="180" height="180" fill="#B81616"/>
+  <circle cx="90" cy="96" r="38" fill="none" stroke="#C8A24A" stroke-width="7"/>
+  <path d="M90 58v76" stroke="#F4F0E7" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="90" cy="40" r="10" fill="#C8A24A"/>
+</svg>

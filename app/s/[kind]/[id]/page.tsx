@@ -132,7 +132,7 @@ export async function generateMetadata({ params }: { params: { kind: string; id:
   };
 }
 
-const CSS = `.piece{max-width:760px;margin:0 auto;padding:44px 0 20px;}
+const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .piece .kicker{margin-bottom:14px;}
 .piece h1{margin:0 0 18px;font-size:44px;line-height:1.1;letter-spacing:-.7px;color:#1B1917;}
 .piece .credit{margin:0 0 20px;font-size:13px;font-style:italic;color:#767065;}
@@ -140,9 +140,13 @@ const CSS = `.piece{max-width:760px;margin:0 auto;padding:44px 0 20px;}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
 .piece .player video{width:100%;aspect-ratio:16/9;display:block;background:#14120F;}
-.piece .sum{margin:0 0 24px;font-size:20px;line-height:1.7;color:#33302B;font-weight:500;}
-.piece .body p{margin:0 0 20px;font-size:18px;line-height:1.8;color:#2A2721;}
+.piece .sum{margin:0 0 26px;font-size:21px;line-height:1.65;color:#3A362F;font-weight:400;}
+.piece .body p{margin:0 0 20px;font-size:18.5px;line-height:1.82;color:#2A2721;}
 .piece .body p:first-child{margin-top:4px;}
+.piece .body p:first-child::first-letter{float:left;font-family:var(--font-display),Georgia,serif;
+  font-size:66px;line-height:.78;font-weight:700;color:#B81616;padding:4px 10px 0 0;}
+.piece .body a{color:#B81616;text-decoration:underline;text-underline-offset:2px;}
+.piece .sum a{color:#B81616;text-decoration:underline;text-underline-offset:2px;}
 .piece .why{margin:28px 0 30px;}
 .piece .why .t{font-size:15.5px;}
 .mark{display:flex;align-items:center;gap:9px;padding:18px 0 0;border-top:1px solid #E6DED1;font-size:13px;color:#8A6A17;font-weight:bold;}
