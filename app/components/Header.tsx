@@ -1,5 +1,6 @@
 import { APP_STORE } from '@/lib/theme';
 import NewsLogo from "@/app/components/NewsLogo";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 export default function Header() {
   return (
@@ -12,6 +13,7 @@ export default function Header() {
         <a href="/score">Score a Story</a>
         <a href="/archive">Archive</a>
         <a href="https://www.dot1.media">Dot One Media</a>
+        <ThemeToggle />
         <a className="getapp" href={APP_STORE}>Get the app</a>
       </nav>
     </div></header>

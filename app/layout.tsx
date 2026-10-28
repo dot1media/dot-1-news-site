@@ -35,6 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
+        {/* Apply the saved theme before paint so there is no flash of the wrong mode. */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('d1-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();` }} />
         {children}
 
         {/* Google Reader Revenue Manager (Subscribe with Google) — reader
