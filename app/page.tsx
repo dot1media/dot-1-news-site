@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 // shared Open Graph/Twitter defaults; this sets the indexable title, the
 // description, and the canonical.
 export const metadata: Metadata = {
-  title: 'Dot 1 News — Human-Edited Alaska News, Daily | Wasilla',
+  title: 'Dot 1 News — Alaska News, Daily | Wasilla',
   description: 'A daily edition of Alaska and national news from Wasilla: a few stories, each with the reason it ran, scored across four measures. Veteran-owned and faith-driven.',
   alternates: { canonical: SITE_URL + '/' },
   keywords: ['Alaska news', 'Wasilla news', 'Mat-Su news', 'Christian news', 'faith-based news', 'daily news digest', 'Dot 1 News'],
