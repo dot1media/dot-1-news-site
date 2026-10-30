@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { clip, alaskaDate, APP_STORE, SITE_URL } from '@/lib/theme';
 import { homeGraph } from '@/lib/seo';
 import WeatherBar from '@/app/components/WeatherBar';
-import { scoreFromRow, INDICATOR_COLUMNS, StoryScore } from '@/lib/scoreRow';
+import { scoreFromRow, INDICATOR_COLUMNS, StoryScore, compositeBand } from '@/lib/scoreRow';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { isImageUrl, isVideoUrl } from '@/lib/media';
@@ -175,15 +175,15 @@ export default async function Home() {
               {lead.summary && <p>{clip(lead.summary, 320)}</p>}
               {lead.score?.hasScore && (
                 <div className="leadscore">
-                  <div className="ls-num">{lead.score.composite.toFixed(1)}<span>/10</span></div>
                   <div className="ls-detail">
-                    <div className="ls-label">D1&#8209;4LS Score{lead.score.confidence ? ` \u00b7 ${lead.score.confidence}` : ''}</div>
+                    <div className="ls-label">D1&#8209;4LS \u00b7 Four&#8209;Lens Assessment</div>
                     <div className="ls-bars">
-                      <span title="Biblical Alignment">BAI {lead.score.bai}</span>
-                      <span title="Prophetic Significance">PSI {lead.score.psi}</span>
-                      <span title="Source Credibility">SCI {lead.score.sci}</span>
-                      <span title="Humanities Impact">HII {lead.score.hii}</span>
+                      <span title="Biblical Alignment">BAI {lead.score.bai}<i>/10</i></span>
+                      <span title="Prophetic Significance">PSI {lead.score.psi}<i>/10</i></span>
+                      <span title="Source Credibility">SCI {lead.score.sci}<i>/10</i></span>
+                      <span title="Humanities Impact">HII {lead.score.hii}<i>/10</i></span>
                     </div>
+                    <div className="ls-sub">Composite {lead.score.overall}/40 \u00b7 {compositeBand(lead.score.overall).label}{lead.score.confidence ? ` \u00b7 ${lead.score.confidence} confidence` : ''}</div>
                   </div>
                 </div>
               )}

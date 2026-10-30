@@ -29,6 +29,7 @@ export default function Footer() {
           <h4>The Standpoint</h4>
           <a href="/about">About &amp; Masthead</a>
           <a href="/standards">Standards &amp; Ethics</a>
+          <a href="/d1-4ls">The Four-Lens Score</a>
           <a href="/corrections">Corrections</a>
           <a href="https://www.dot1.media/#news">How we score the news</a>
         </div>

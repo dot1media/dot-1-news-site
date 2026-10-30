@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
-import { scoreFromRow, breakdownFromRow, StoryScore, IndexBreakdown } from '@/lib/scoreRow';
+import { scoreFromRow, breakdownFromRow, StoryScore, IndexBreakdown, compositeBand, sciNotice, profileBalance } from '@/lib/scoreRow';
 import { newsArticleGraph, photoGraph, videoGraph } from '@/lib/seo';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
@@ -85,6 +85,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                psi_textual_linkage, psi_eschatological_fit, psi_historical_continuity, psi_spiritual_impact, psi_theological_restraint,
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
+               d14ls_interpretation, d14ls_index_notes, d14ls_instrument_version,
                COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author, tags
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
@@ -212,6 +213,15 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .sb-pip{width:9px;height:9px;border-radius:50%;background:var(--rule2);display:inline-block;}
 .sb-val{font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted);margin-left:5px;min-width:9px;text-align:right;}
 .sb-note{margin:16px 0 0;font-size:12.5px;line-height:1.6;color:var(--muted);font-style:italic;}
+.ls-sub{font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums;}
+.ls-bars i{font-style:normal;opacity:.55;font-size:.82em;}
+.sb-alert{margin:10px 0 2px;padding:10px 13px;border-radius:7px;font-size:13px;line-height:1.55;background:rgba(200,162,74,.14);border:1px solid rgba(138,106,23,.35);color:var(--ink);}
+.sb-alert.warn{background:rgba(184,22,22,.1);border-color:rgba(184,22,22,.4);}
+.sb-interp{margin:14px 0 4px;font-size:14.5px;line-height:1.7;color:var(--ink);}
+.sb-lensnote{margin:0 0 10px;font-size:13px;line-height:1.55;color:var(--muted);}
+.sb-meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:16px 0 0;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.4px;color:var(--muted);}
+.sb-ver{margin:12px 0 0;font-size:12px;color:var(--muted);}
+.sb-ver .ln{color:var(--crimson);text-decoration:underline;}
 .tags{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:26px 0 2px;padding-top:20px;border-top:1px solid var(--imgbg);}
 .tags .tags-label{font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-right:3px;}
 .tags .tag{font-family:var(--font-mono),monospace;font-size:12px;letter-spacing:.4px;color:var(--body);background:var(--raised);border:1px solid var(--rule2);padding:5px 11px;border-radius:999px;transition:all .15s;}
@@ -299,30 +309,48 @@ export default async function SharePage({ params }: { params: { kind: string; id
               <div className="t">{item.editorNote}</div>
             </div>
           )}
-          {item.kind === 'article' && item.score?.hasScore && (
+          {item.kind === 'article' && item.score?.hasScore && (() => {
+            const s = item.score!;
+            const band = compositeBand(s.overall);
+            const notice = sciNotice(s.sci);
+            const balance = profileBalance(s);
+            const notes = s.indexNotes || {};
+            const LENS: { key: 'BAI'|'PSI'|'SCI'|'HII'; name: string; val: number; note?: string }[] = [
+              { key: 'BAI', name: 'Biblical Alignment', val: s.bai, note: notes.BAI },
+              { key: 'PSI', name: 'Prophetic Significance', val: s.psi, note: notes.PSI },
+              { key: 'SCI', name: 'Source Credibility', val: s.sci, note: notes.SCI },
+              { key: 'HII', name: 'Humanities Impact', val: s.hii, note: notes.HII },
+            ];
+            return (
             <details className="scorecard">
               <summary className="leadscore">
-                <div className="ls-num">{item.score.composite.toFixed(1)}<span>/10</span></div>
                 <div className="ls-detail">
-                  <div className="ls-label">D1&#8209;4LS Score{item.score.confidence ? ` · ${item.score.confidence}` : ''}</div>
+                  <div className="ls-label">D1&#8209;4LS · Four&#8209;Lens Assessment</div>
                   <div className="ls-bars">
-                    <span title="Biblical Alignment">BAI {item.score.bai}</span>
-                    <span title="Prophetic Significance">PSI {item.score.psi}</span>
-                    <span title="Source Credibility">SCI {item.score.sci}</span>
-                    <span title="Humanities Impact">HII {item.score.hii}</span>
+                    <span title="Biblical Alignment">BAI {s.bai}<i>/10</i></span>
+                    <span title="Prophetic Significance">PSI {s.psi}<i>/10</i></span>
+                    <span title="Source Credibility">SCI {s.sci}<i>/10</i></span>
+                    <span title="Humanities Impact">HII {s.hii}<i>/10</i></span>
                   </div>
+                  <div className="ls-sub">Composite {s.overall}/40 · {band.label}{s.confidence ? ` · ${s.confidence} confidence` : ''}</div>
                 </div>
-                <span className="ls-toggle" aria-hidden="true">Why this score</span>
+                <span className="ls-toggle" aria-hidden="true">Why this assessment</span>
               </summary>
-              {item.scoreBreakdown && (
-                <div className="scorebreak">
-                  {item.scoreBreakdown.map((idx) => (
+              <div className="scorebreak">
+                {notice.level !== 'none' && (
+                  <p className={'sb-alert' + (notice.level === 'warning' ? ' warn' : '')}>{notice.text}</p>
+                )}
+                {s.interpretation && <p className="sb-interp">{s.interpretation}</p>}
+                {item.scoreBreakdown && item.scoreBreakdown.map((idx) => {
+                  const note = LENS.find((l) => l.key === idx.key)?.note;
+                  return (
                     <div className="sb-idx" key={idx.key}>
                       <div className="sb-head">
                         <span className="sb-tag" style={{ background: idx.color }}>{idx.key}</span>
                         <span className="sb-name">{idx.name}</span>
                         <b className="sb-total">{idx.total} / 10</b>
                       </div>
+                      {note ? <p className="sb-lensnote">{note}</p> : null}
                       <div className="sb-inds">
                         {idx.indicators.map((ind) => (
                           <div className="sb-ind" key={ind.label}>
@@ -337,12 +365,19 @@ export default async function SharePage({ params }: { params: { kind: string; id
                         ))}
                       </div>
                     </div>
-                  ))}
-                  <p className="sb-note">Each measure is built from five indicators, each scored 0, 1, or 2. A high composite does not mean a story is true, and a low one does not mean it is false. The number is a starting point for thinking, not a substitute for it.</p>
+                  );
+                })}
+                <div className="sb-meta">
+                  <span>Composite {s.overall}/40 · {band.label}</span>
+                  <span>Profile: {balance.label}</span>
+                  {item.verificationStatus ? <span>Editorial verification is shown separately, above.</span> : null}
                 </div>
-              )}
+                <p className="sb-note">Read the four lenses together, not the total. A high score does not mean a story is true, morally good, prophetically fulfilled, or endorsed by Dot 1 News; a low score does not mean it is false or unimportant. Source Credibility concerns evidence only and is separate from theological alignment.</p>
+                <p className="sb-ver">D1&#8209;4LS {s.instrumentVersion ? `v${s.instrumentVersion}` : 'assessment'} · an experimental framework still being tested. <a className="ln" href="/d1-4ls">How the scoring works</a></p>
+              </div>
             </details>
-          )}
+            );
+          })()}
           {item.kind === 'article' ? (() => {
             const V: Record<string, { label: string; color: string }> = {
               verified: { label: 'Verified', color: '#D4AF37' },

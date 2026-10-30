@@ -163,6 +163,8 @@ img{max-width:100%;display:block;}
 .leadscore .ls-num span{font-size:16px;color:var(--goldtext);font-weight:normal;}
 .leadscore .ls-detail{flex:1;min-width:0;}
 .leadscore .ls-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--goldtext);font-weight:bold;margin-bottom:8px;}
+.leadscore .ls-sub{font-size:12px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums;}
+.leadscore .ls-bars i{font-style:normal;opacity:.5;font-size:.8em;}
 .leadscore .ls-bars{display:flex;flex-wrap:wrap;gap:6px 10px;}
 .leadscore .ls-bars span{font-family:Georgia,serif;font-size:12px;color:var(--body);
   background:var(--bg);border:1px solid var(--rule2);padding:3px 9px;border-radius:4px;white-space:nowrap;}
@@ -186,6 +188,8 @@ img{max-width:100%;display:block;}
 
 /* ---- standing pages: About, Standards, Corrections ---- */
 .docpage{max-width:720px;margin:0 auto;padding:46px 0 24px;}
+.docpage .pilotcard{margin:22px 0 10px;padding:16px 18px;border-radius:10px;background:rgba(200,162,74,.1);border:1px solid rgba(138,106,23,.3);font-size:14.5px;line-height:1.65;color:var(--ink);}
+.docpage .pilotcard .ln{color:var(--crimson);text-decoration:underline;}
 .docpage .kicker{margin-bottom:14px;}
 .docpage h1{margin:0 0 12px;font-size:42px;line-height:1.1;letter-spacing:-.5px;color:var(--ink);
   font-family:var(--font-display),Georgia,serif;}
