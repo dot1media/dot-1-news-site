@@ -28,6 +28,28 @@ interface ShareItem {
   updatedAt?: string | null;
   author?: string | null;
   tags?: string[] | null;
+  sourceUrl?: string | null;
+  sourceName?: string | null;
+  sources?: { title?: string; url: string; source?: string }[] | null;
+  imageCredit?: string | null;
+  imageCreditUrl?: string | null;
+  imageRightsRestricted?: boolean | null;
+}
+
+// Original-source links may be a JSON array (citations) or a single source_url.
+function parseSources(row: Record<string, any>): { title?: string; url: string; source?: string }[] {
+  const out: { title?: string; url: string; source?: string }[] = [];
+  const seen = new Set<string>();
+  const add = (url?: string | null, title?: string, source?: string) => {
+    const u = String(url || '').trim();
+    if (!u || !/^https?:\/\//i.test(u) || seen.has(u)) return;
+    seen.add(u); out.push({ url: u, title: title?.trim() || undefined, source: source?.trim() || undefined });
+  };
+  let c = row['citations'];
+  if (typeof c === 'string') { try { c = JSON.parse(c); } catch { c = null; } }
+  if (Array.isArray(c)) for (const x of c) add(x?.url, x?.title, x?.source);
+  add(row['source_url'], undefined, row['source_name']);
+  return out;
 }
 
 // Tags for the foot of an article: the editor's stored tags when present,
@@ -86,6 +108,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
                d14ls_interpretation, d14ls_index_notes, d14ls_instrument_version,
+               source_url, source_name, citations, image_credit, image_credit_url, image_rights_restricted,
                COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author, tags
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
@@ -103,7 +126,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author, tags: x.tags };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author, tags: x.tags, sources: parseSources(x), imageCredit: x.image_credit || null, imageCreditUrl: x.image_credit_url || null, imageRightsRestricted: !!x.image_rights_restricted };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -171,6 +194,12 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .piece .kicker{margin-bottom:14px;}
 .piece h1{margin:0 0 18px;font-size:44px;line-height:1.1;letter-spacing:-.7px;color:var(--ink);}
 .piece .credit{margin:0 0 20px;font-size:13px;font-style:italic;color:var(--muted);}
+.sourcefoot{margin:22px 0 2px;padding-top:18px;border-top:1px solid var(--imgbg);}
+.sourcefoot .src-label{display:block;font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-bottom:8px;}
+.sourcefoot .src ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;}
+.sourcefoot .src a{font-size:14px;color:var(--crimson);text-decoration:underline;word-break:break-word;}
+.sourcefoot .imgcredit{margin:14px 0 0;font-size:12.5px;color:var(--muted);}
+.sourcefoot .imgcredit a{color:var(--muted);text-decoration:underline;}
 .piece .hero{margin:26px 0 30px;background:var(--imgbg);}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
@@ -404,6 +433,23 @@ export default async function SharePage({ params }: { params: { kind: string; id
               </div>
             ) : null;
           })()}
+          {item.kind === 'article' && (((item.sources && item.sources.length > 0) || item.imageCredit) ? (
+            <div className="sourcefoot">
+              {item.sources && item.sources.length > 0 && (
+                <div className="src">
+                  <span className="src-label">{item.sources.length > 1 ? 'Original sources' : 'Original source'}</span>
+                  <ul>
+                    {item.sources.map((sc, i) => (
+                      <li key={i}><a href={sc.url} target="_blank" rel="noreferrer noopener">{sc.source || sc.title || sc.url}</a></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {item.imageCredit && (
+                <p className="imgcredit">Image: {item.imageCreditUrl ? <a href={item.imageCreditUrl} target="_blank" rel="noreferrer noopener">{item.imageCredit}</a> : item.imageCredit}</p>
+              )}
+            </div>
+          ) : null)}
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
