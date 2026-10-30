@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Bodoni_Moda, Fraunces, IBM_Plex_Mono } from 'next/font/google';
 import { SITE_URL } from '@/lib/theme';
+import Analytics from './components/Analytics';
 import './globals.css';
 
 // Brand faces: Bodoni Moda for the nameplate and headlines, Fraunces for
@@ -38,6 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Apply the saved theme before paint so there is no flash of the wrong mode. */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('d1-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();` }} />
         {children}
+
+        {/* Google Analytics 4 — active once NEXT_PUBLIC_GA_ID is set. */}
+        <Analytics />
 
         {/* Google Reader Revenue Manager (Subscribe with Google) — reader
             sign-up survey. Site-wide; the library queues on self.SWG_BASIC so
