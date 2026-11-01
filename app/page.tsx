@@ -41,21 +41,6 @@ interface ReaderItem {
 
 // The verification dot, shared in meaning with the app: gold verified, orange
 // pending, red unverified. A published story defaults to verified.
-const VERIFY: Record<string, { label: string; color: string }> = {
-  verified: { label: 'Verified', color: '#D4AF37' },
-  pending: { label: 'Pending verification', color: '#E08A2B' },
-  unverified: { label: 'Unverified', color: '#C8372A' },
-};
-
-function VerifyMark({ status, className = 'mark' }: { status?: string | null; className?: string }) {
-  const v = VERIFY[status || 'verified'] || VERIFY.verified;
-  return (
-    <div className={className}>
-      <span style={{ display: 'inline-block', width: '0.62em', height: '0.62em', borderRadius: '50%', background: v.color, verticalAlign: 'baseline' }} />
-      &nbsp; {v.label}
-    </div>
-  );
-}
 
 function href(i: ReaderItem): string {
   const k = i.kind === 'photo' ? 'p' : i.kind === 'video' ? 'v' : 'n';
@@ -188,7 +173,6 @@ export default async function Home() {
                 </div>
               )}
               <Why note={lead.editorNote} n={300} />
-              <VerifyMark status={lead.verificationStatus} />
               <div className="lead-actions">
                 <a className="more" href={href(lead)}>Read the full story &rsaquo;</a>
                 <a className="scorelink" href={`/score?t=${encodeURIComponent(lead.title)}`}>Score this story yourself &rsaquo;</a>

@@ -399,7 +399,6 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 <div className="sb-meta">
                   <span>Composite {s.overall}/40 · {band.label}</span>
                   <span>Profile: {balance.label}</span>
-                  {item.verificationStatus ? <span>Editorial verification is shown separately, above.</span> : null}
                 </div>
                 <p className="sb-note">Read the four lenses together, not the total. A high score does not mean a story is true, morally good, prophetically fulfilled, or endorsed by Dot 1 News; a low score does not mean it is false or unimportant. Source Credibility concerns evidence only and is separate from theological alignment.</p>
                 <p className="sb-ver">D1&#8209;4LS {s.instrumentVersion ? `v${s.instrumentVersion}` : 'assessment'} · an experimental framework still being tested. <a className="ln" href="/d1-4ls">How the scoring works</a></p>
@@ -407,19 +406,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
             </details>
             );
           })()}
-          {item.kind === 'article' ? (() => {
-            const V: Record<string, { label: string; color: string }> = {
-              verified: { label: 'Verified', color: '#D4AF37' },
-              pending: { label: 'Pending verification', color: '#E08A2B' },
-              unverified: { label: 'Unverified', color: '#C8372A' },
-            };
-            const v = V[item.verificationStatus || 'verified'] || V.verified;
-            return (
-              <div className="mark">
-                <span className="dot" style={{ background: v.color }} /> {v.label}
-              </div>
-            );
-          })() : (
+          {item.kind !== 'article' && (
             <div className="mark"><span className="dot" /> Approved by an editor</div>
           )}
           {item.kind === 'article' && (() => {
