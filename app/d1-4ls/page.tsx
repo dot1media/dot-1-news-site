@@ -17,7 +17,7 @@ export default function D14LSPage() {
         <article className="docpage">
           <div className="kicker">Methodology</div>
           <h1>The Four-Lens Assessment</h1>
-          <p className="lead">Every news story has more than one dimension. We look at each story through four lenses and show you what we see, so you can weigh it for yourself.</p>
+          <p className="lead">Every news story has more than one dimension. We look at each story through four lenses and show you what we see, so you can weigh it for yourself. To learn to use the lenses on anything you read, start with our <a className="ln" href="/discernment">reader&rsquo;s guide to reading the news</a>.</p>
 
           <div className="pilotcard">
             <strong>This is a work in progress.</strong> D1-4LS is an experimental assessment framework we are actively testing and refining. The scores are meant to support discernment, not replace your own judgment, and the method will keep changing as we learn. We would genuinely value your input: tell us what helps, what confuses, and what you would do differently at <a className="ln" href="mailto:contact@dot1.media?subject=D1-4LS%20feedback">contact@dot1.media</a>.
