@@ -5,7 +5,7 @@ import Footer from '@/app/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Editorial Standards & Ethics · Dot 1 News',
-  description: 'The editorial standards, ownership, independence, sourcing, ethics, and AI-use policy of Dot 1 News: a declared standpoint, a business firewall, cited sourcing, human approval, and openly published scoring.',
+  description: 'Dot 1 News is a tool for discerning the news. Our editorial standards, ownership, independence, sourcing, ethics, and AI-use policy: a declared standpoint, cited sourcing, human approval, and openly published scoring.',
   alternates: { canonical: SITE_URL + '/standards' },
 };
 
@@ -19,8 +19,11 @@ export default function StandardsPage() {
           <h1>Editorial Standards &amp; Ethics</h1>
           <p className="lead">How a story earns its place in the edition, who stands behind it, and how we hold ourselves to it. We ask the news to declare its method, so we declare ours, in full.</p>
 
+          <h2>Our purpose</h2>
+          <p>Dot 1 News exists to help you discern the news, not to break it. The events we cover are reported first by other outlets. Our work is to read that coverage, write it up plainly, and weigh it through one consistent method, so you can interpret the news for yourself and decide what it means for your life. We are a layer of discernment over the news, not a competitor to the newsrooms that gather it. We build on their reporting, credit it, and link to it on every story.</p>
+
           <h2>A declared standpoint</h2>
-          <p>We are Christ-centered, and we say so. A standpoint you can see is one you can weigh. We do not pretend to a view from nowhere, and we do not hide the lens through which we choose and read the news. Declaring our lens is a commitment to fairness, not a license to abandon it: a story is reported accurately and its subjects treated justly whether or not they share our convictions.</p>
+          <p>Because our work is interpretation, we owe you the lens we interpret through. We are Christ-centered, and we say so. A standpoint you can see is one you can weigh, and a tool for discernment that hid its own would be the very thing it warns against. We do not pretend to a view from nowhere. Declaring our lens is a commitment to fairness, not a license to abandon it: a story is reported accurately and its subjects treated justly whether or not they share our convictions.</p>
 
           <h2>Ownership and funding</h2>
           <p>Dot 1 News is owned and published by DOT ONE LLC, doing business as Dot One Media, a veteran-owned company based in Wasilla, Alaska. The newsroom is funded entirely by its parent company. It is free to read, carries no advertising, no sponsored content, and no paywall.</p>
@@ -30,7 +33,7 @@ export default function StandardsPage() {
           <p>Editorial decisions are made by the newsroom alone. The business interests of our parent company do not shape what we cover, how we cover it, or what we conclude. Coverage, corrections, and placement are never for sale, and no story is ever withheld, softened, or run as a favor. The people who decide what publishes answer to our readers and to the standards on this page, not to any commercial relationship.</p>
 
           <h2>How our stories are made, and our use of AI</h2>
-          <p>Every story is written by a person. Our newsroom uses AI as a research and drafting assistant: it gathers the source reporting, lays out what each source says, and assembles an initial brief with a link to every original. It drafts only from those cited, linked sources, never from its own memory, and it never invents a fact, a quote, a name, a number, or a source.</p>
+          <p>Every story is written by a person, built on the reporting other outlets have already published about an event, which we credit and link. Our newsroom uses AI as a research and drafting assistant: it gathers that source reporting, lays out what each source says, and assembles an initial brief with a link to every original. It drafts only from those cited, linked sources, never from its own memory, and it never invents a fact, a quote, a name, a number, or a source.</p>
           <p>A journalist then reviews those sources and writes the story. The AI is a tool, never a decision-maker: it does not choose what runs, and it does not have the final word on anything you read. Every article states plainly how it was made, and the original sources are linked at the foot of each one. We tell you this openly because a newsroom that hides its method has no business asking you to trust it.</p>
 
           <h2>A human approves everything</h2>
