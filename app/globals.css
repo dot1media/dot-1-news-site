@@ -30,7 +30,21 @@ img{max-width:100%;display:block;}
 .masthead h1{margin:0 0 8px;font-size:60px;line-height:1;letter-spacing:1.5px;color:var(--ink);font-weight:bold;}
 .masthead h1 span{color:var(--crimson);}
 .masthead .tag{font-size:11px;letter-spacing:4.5px;text-transform:uppercase;color:var(--goldtext);}
-.masthead .mission{max-width:600px;margin:15px auto 0;font-size:14.5px;line-height:1.62;color:var(--body);}
+/* First-visit welcome modal (IntroModal). */
+.introwrap{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(20,18,16,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:introfade .22s ease;}
+@keyframes introfade{from{opacity:0}to{opacity:1}}
+.introcard{position:relative;width:100%;max-width:460px;background:var(--paper);border:1px solid var(--rule);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.4);padding:40px 34px 32px;text-align:center;animation:introrise .26s cubic-bezier(.2,.7,.3,1);}
+@keyframes introrise{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.introx{position:absolute;top:10px;right:13px;background:none;border:none;font-size:27px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px;}
+.introx:hover{color:var(--ink);}
+.introkick{font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--goldtext);margin-bottom:15px;}
+.introtitle{font-family:var(--font-display),Georgia,serif;font-size:clamp(23px,6.2vw,29px);line-height:1.14;color:var(--ink);margin:0 0 15px;font-weight:700;}
+.introbody{font-family:var(--font-body),Georgia,serif;font-size:15.5px;line-height:1.6;color:var(--body);margin:0 auto 26px;max-width:40ch;}
+.introactions{display:flex;flex-direction:column;align-items:center;gap:15px;}
+.introbtn{background:var(--crimson);color:#fff;border:none;font-family:var(--font-mono),monospace;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;border-radius:8px;cursor:pointer;}
+.introbtn:hover{filter:brightness(1.07);}
+.introlink{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--goldtext);text-decoration:none;}
+.introlink:hover{color:var(--ink);}
 .dateline{max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;
   align-items:center;justify-content:space-between;gap:14px;
   font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);

@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { Bodoni_Moda, Fraunces, IBM_Plex_Mono } from 'next/font/google';
 import { SITE_URL } from '@/lib/theme';
 import Analytics from './components/Analytics';
+import IntroModal from './components/IntroModal';
 import './globals.css';
 
 // Brand faces: Bodoni Moda for the nameplate and headlines, Fraunces for
@@ -39,6 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Apply the saved theme before paint so there is no flash of the wrong mode. */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('d1-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();` }} />
         {children}
+
+        {/* First-visit welcome: what Dot 1 News is, shown once per browser. */}
+        <IntroModal />
 
         {/* Google Analytics 4 — active once NEXT_PUBLIC_GA_ID is set. */}
         <Analytics />

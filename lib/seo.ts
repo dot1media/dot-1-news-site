@@ -126,13 +126,15 @@ export function videoGraph(a: ArticleSeo & { videoUrl?: string | null }) {
   };
 }
 
-function breadcrumbNode(section: string, url: string, title: string) {
+function breadcrumbNode(_section: string, url: string, title: string) {
+  // Every non-last ListItem must carry an `item` (Google rejects the markup
+  // otherwise). We have no standalone section landing page, so the breadcrumb
+  // is two levels, home then the article, each with a real URL.
   return {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Dot 1 News', item: SITE_URL + '/' },
-      { '@type': 'ListItem', position: 2, name: section },
-      { '@type': 'ListItem', position: 3, name: clip(title, 70), item: url },
+      { '@type': 'ListItem', position: 2, name: clip(title, 70), item: url },
     ],
   };
 }
