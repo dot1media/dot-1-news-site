@@ -163,6 +163,27 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
 // Per-article OG tags — this is why the article page exists as its own route:
 // a link shared to iMessage or social must preview with the story's own title
 // and image, not the generic site card.
+// Reader reactions are the same shared counter the app writes to: content_reactions
+// holds one row per user per reaction, so COUNT(*) here is every reader's reactions,
+// the same number the app shows. Read-only on the web; reacting happens in the app.
+async function getReactionTotals(id: string): Promise<{ like: number; love: number; pray: number; amen: number; total: number }> {
+  const out = { like: 0, love: 0, pray: 0, amen: 0, total: 0 };
+  try {
+    const rows = await sql`
+      SELECT reaction_type, COUNT(*)::int AS count
+      FROM content_reactions
+      WHERE content_type = 'news' AND content_id = ${id}
+      GROUP BY reaction_type`;
+    for (const r of rows as any[]) {
+      if (r.reaction_type in out) (out as any)[r.reaction_type] = Number(r.count) || 0;
+    }
+    out.total = out.like + out.love + out.pray + out.amen;
+  } catch {
+    /* table missing or query failed: show nothing rather than break the page */
+  }
+  return out;
+}
+
 export async function generateMetadata({ params }: { params: { kind: string; id: string } }): Promise<Metadata> {
   const item = await getItem(params.kind, params.id);
   if (!item) {
@@ -200,6 +221,14 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .sourcefoot .src a{font-size:14px;color:var(--crimson);text-decoration:underline;word-break:break-word;}
 .sourcefoot .imgcredit{margin:14px 0 0;font-size:12.5px;color:var(--muted);}
 .sourcefoot .imgcredit a{color:var(--muted);text-decoration:underline;}
+.reactfoot{margin:24px 0 2px;padding-top:18px;border-top:1px solid var(--imgbg);}
+.reactfoot .react-label{display:block;font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-bottom:11px;}
+.reactfoot .react-list{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:20px;}
+.reactfoot .react-list li{font-family:var(--font-mono),monospace;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);}
+.reactfoot .react-list b{color:var(--ink);font-size:17px;margin-right:6px;font-family:var(--font-display),Georgia,serif;}
+.reactfoot .react-none{font-size:13.5px;color:var(--muted);margin:0;font-style:italic;}
+.reactfoot .react-cta{font-size:12.5px;color:var(--muted);margin:13px 0 0;}
+.reactfoot .react-cta a{color:var(--crimson);text-decoration:underline;}
 .piece .hero{margin:26px 0 30px;background:var(--imgbg);}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
@@ -288,6 +317,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
     : item.kind === 'video' ? 'The Reel'
     : (item.category || 'Dot 1 News');
   const cta = 'Carry the edition with you';
+  const reactions = item.kind === 'article' ? await getReactionTotals(params.id) : null;
 
   const seo = { id: params.id, title: item.title, summary: item.summary, image: item.image, category: item.category, publishedAt: item.publishedAt, updatedAt: item.updatedAt };
   const graph = item.kind === 'photo' ? photoGraph(seo)
@@ -437,6 +467,22 @@ export default async function SharePage({ params }: { params: { kind: string; id
               )}
             </div>
           ) : null)}
+          {item.kind === 'article' && reactions && (
+            <div className="reactfoot">
+              <span className="react-label">Reader reactions</span>
+              {reactions.total > 0 ? (
+                <ul className="react-list">
+                  <li><b>{reactions.like}</b> Like</li>
+                  <li><b>{reactions.love}</b> Love</li>
+                  <li><b>{reactions.pray}</b> Pray</li>
+                  <li><b>{reactions.amen}</b> Amen</li>
+                </ul>
+              ) : (
+                <p className="react-none">No reactions yet. Be the first, in the app.</p>
+              )}
+              <p className="react-cta">React to this story in the <a href={APP_STORE}>Dot 1 News app</a>.</p>
+            </div>
+          )}
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
