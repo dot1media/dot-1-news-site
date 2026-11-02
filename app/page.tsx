@@ -140,7 +140,7 @@ export default async function Home() {
 
       <div className="masthead"><div className="in">
         <h1>DOT&nbsp;<NewsLogo h="1.15em" />&nbsp;NEWS</h1>
-        <div className="tag">A declared standpoint, not a hidden one.</div>
+        <div className="tag">A declared standpoint. Interpreting the times.</div>
         <p className="mission">We don&rsquo;t break the news. We help you read it. A few stories a day, each drawn from several outlets and weighed through four lenses, so you can discern it for yourself.</p>
       </div></div>
       <div className="dateline">
