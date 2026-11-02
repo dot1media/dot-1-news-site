@@ -30,6 +30,7 @@ img{max-width:100%;display:block;}
 .masthead h1{margin:0 0 8px;font-size:60px;line-height:1;letter-spacing:1.5px;color:var(--ink);font-weight:bold;}
 .masthead h1 span{color:var(--crimson);}
 .masthead .tag{font-size:11px;letter-spacing:4.5px;text-transform:uppercase;color:var(--goldtext);}
+.masthead .mission{max-width:600px;margin:15px auto 0;font-size:14.5px;line-height:1.62;color:var(--body);}
 .dateline{max-width:1180px;margin:0 auto;padding:12px 28px;display:flex;
   align-items:center;justify-content:space-between;gap:14px;
   font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);

@@ -16,7 +16,7 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Dot 1 News \u2014 A Declared Standpoint',
-  description: 'A daily edition of Alaska and national news: a few stories, each with the reason it ran, scored across four measures. A veteran-owned, faith-driven newsroom in Wasilla, Alaska.',
+  description: 'Dot 1 News is a tool for discerning the news, not another outlet racing to break it. A few stories a day, each drawn from several outlets and weighed through four lenses, from a veteran-owned, faith-driven publication in Wasilla, Alaska.',
   applicationName: 'Dot 1 News',
   appleWebApp: { capable: true, title: 'Dot 1 News' },
   openGraph: {
