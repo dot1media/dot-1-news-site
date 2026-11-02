@@ -52,14 +52,20 @@ export default function AboutPage() {
           <h2>Masthead</h2>
           <ul className="names">
             <li><span className="role">Founder &amp; Editor</span><span className="person">Dennis Matthews Jr.</span></li>
-            <li><span className="role">Photography, The Lens</span><span className="person">Dot One Photography</span></li>
-            <li><span className="role">Published by</span><span className="person">Dot One Media (DOT ONE LLC), Wasilla, Alaska</span></li>
+            <li><span className="role">Staff Photojournalist, The Lens</span><span className="person">Brittany Matthews</span></li>
+            <li><span className="role">Published by</span><span className="person">Dot One Media (DOT ONE LLC)</span></li>
+            <li><span className="role">Based in</span><span className="person">Wasilla, Alaska</span></li>
+            <li><span className="role">Founded</span><span className="person">2025</span></li>
           </ul>
 
-          <h2>Contact</h2>
-          <p>General inquiries and story tips: <a className="ln" href="mailto:contact@dot1.media">contact@dot1.media</a>. For help with the app or the site: <a className="ln" href="mailto:support@dot1.media">support@dot1.media</a>. To request a correction, see our <a className="ln" href="/corrections">Corrections</a> page.</p>
+          <h2>Ownership &amp; funding</h2>
+          <p>Dot 1 News is owned and published by DOT ONE LLC, doing business as Dot One Media, a veteran-owned company based in Wasilla, Alaska. The newsroom is funded by its parent company. It is free to read, carries no advertising, no sponsored content, and no paywall, and it takes no money from any person or interest it covers. No outside investor, advertiser, or donor has any say in what we report. Our full approach to independence, sourcing, ethics, and the use of AI is on our <a className="ln" href="/standards">Standards &amp; Ethics</a> page.</p>
 
-          <div className="updated">Dot One Media, Wasilla, Alaska. Create with purpose.</div>
+          <h2>Contact</h2>
+          <p>General inquiries, press, and story tips: <a className="ln" href="mailto:contact@dot1.media">contact@dot1.media</a>. For help with the app or the site: <a className="ln" href="mailto:support@dot1.media">support@dot1.media</a>. To request a correction, see our <a className="ln" href="/corrections">Corrections</a> page.</p>
+          <p>Mailing address: Dot One Media, PO Box 870935, Wasilla, AK 99687.</p>
+
+          <div className="updated">Published by Dot One Media (DOT ONE LLC), Wasilla, Alaska. Create with purpose. Last reviewed November 2026.</div>
         </article>
       </main>
       <Footer />
