@@ -12,6 +12,7 @@ export default function Header() {
         <a href="/#reel">The Reel</a>
         <a href="/score">Score a Story</a>
         <a href="/archive">Archive</a>
+        <a href="/account">Account</a>
         <a href="https://www.dot1.media">Dot One Media</a>
         <ThemeToggle />
         <a className="getapp" href={APP_STORE}>Get the app</a>

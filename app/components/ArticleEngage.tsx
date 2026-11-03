@@ -3,11 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   type AppUser, type WebComment,
-  getCachedUser, login, register, logout,
+  getCachedUser, logout,
   getComments, addComment, reactToComment, toggleReaction,
 } from '@/lib/appApi';
-
-const APP_STORE = 'https://apps.apple.com/us/app/dot-1-news/id6757212352';
+import AuthPanel from '@/app/components/AuthPanel';
 
 type ReactionKey = 'like' | 'love' | 'pray' | 'amen';
 const REACTIONS: { key: ReactionKey; label: string }[] = [
@@ -22,15 +21,6 @@ interface Props {
   initialReactions: { like: number; love: number; pray: number; amen: number };
   initialCommentCount: number;
 }
-
-// Mirror of the backend password policy, so we can guide before submitting.
-const PW_RULES: { test: (s: string) => boolean; label: string }[] = [
-  { test: (s) => s.length >= 8, label: 'At least 8 characters' },
-  { test: (s) => /[a-z]/.test(s), label: 'A lowercase letter' },
-  { test: (s) => /[A-Z]/.test(s), label: 'An uppercase letter' },
-  { test: (s) => /[0-9]/.test(s), label: 'A number' },
-  { test: (s) => /[^a-zA-Z0-9]/.test(s), label: 'A special character' },
-];
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
@@ -164,7 +154,11 @@ export default function ArticleEngage({ articleId, initialReactions, initialComm
         {!ready ? (
           <p className="aeg-hint">Loading…</p>
         ) : !me ? (
-          <AuthPanel commentCount={commentCount} onSignedIn={onSignedIn} />
+          <AuthPanel
+            onSignedIn={onSignedIn}
+            title={commentCount > 0 ? `Join the conversation (${commentCount})` : 'Join the conversation'}
+            subtitle="Sign in or create a free account to read and add comments. It is the same account as the app."
+          />
         ) : (
           <>
             <form className="aeg-compose" onSubmit={onPost}>
@@ -219,102 +213,6 @@ export default function ArticleEngage({ articleId, initialReactions, initialComm
   );
 }
 
-/* ── sign in / create account, shown in place of the old download wall ─────── */
-function AuthPanel({ commentCount, onSignedIn }: { commentCount: number; onSignedIn: (u: AppUser) => void }) {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  // shared fields
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  // register-only
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [subscribe, setSubscribe] = useState(true);
-
-  const pwOk = PW_RULES.every((r) => r.test(password));
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (busy) return;
-    setError('');
-    setBusy(true);
-    try {
-      if (mode === 'login') {
-        const u = await login(identifier.trim(), password);
-        onSignedIn(u);
-      } else {
-        if (!pwOk) { setError('Please meet all the password requirements.'); setBusy(false); return; }
-        const u = await register(
-          { username: username.trim(), name: name.trim(), email: email.trim(), password },
-          subscribe,
-        );
-        onSignedIn(u);
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong. Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="aeg-auth">
-      <div className="aeg-authhead">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-        <div>
-          <div className="aeg-authtitle">
-            {commentCount > 0 ? `Join the conversation (${commentCount})` : 'Join the conversation'}
-          </div>
-          <p className="aeg-authsub">Sign in or create a free account to read and add comments. It is the same account as the app.</p>
-        </div>
-      </div>
-
-      <div className="aeg-tabs">
-        <button type="button" className={mode === 'login' ? 'on' : ''} onClick={() => { setMode('login'); setError(''); }}>Sign in</button>
-        <button type="button" className={mode === 'register' ? 'on' : ''} onClick={() => { setMode('register'); setError(''); }}>Create account</button>
-      </div>
-
-      <form className="aeg-form" onSubmit={submit}>
-        {mode === 'login' ? (
-          <>
-            <input autoComplete="username" placeholder="Email or username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required />
-            <input type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </>
-        ) : (
-          <>
-            <input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
-            <input placeholder="Username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} minLength={3} required />
-            <input type="email" placeholder="Email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <input type="password" autoComplete="new-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            {password.length > 0 && (
-              <ul className="aeg-pw">
-                {PW_RULES.map((r) => (
-                  <li key={r.label} className={r.test(password) ? 'ok' : ''}>{r.label}</li>
-                ))}
-              </ul>
-            )}
-            <label className="aeg-sub">
-              <input type="checkbox" checked={subscribe} onChange={(e) => setSubscribe(e.target.checked)} />
-              <span>Email me the daily edition. A few stories worth your time, no noise. Unsubscribe anytime.</span>
-            </label>
-          </>
-        )}
-
-        {error && <p className="aeg-err">{error}</p>}
-
-        <button type="submit" className="aeg-btn wide" disabled={busy}>
-          {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
-        </button>
-      </form>
-
-      <p className="aeg-getapp">Prefer the app? <a href={APP_STORE}>Get Dot 1 News free</a>.</p>
-    </div>
-  );
-}
-
 function StyleTag() {
   return (
     <style>{`
@@ -350,27 +248,6 @@ function StyleTag() {
 .aeg-creact{font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:4px 10px;cursor:pointer;}
 .aeg-creact.on{border-color:var(--crimson);color:var(--crimson);}
 
-.aeg-auth{border:1px solid var(--rule2);border-radius:12px;background:var(--bg);padding:18px;}
-.aeg-authhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
-.aeg-authhead svg{color:var(--crimson);flex:none;margin-top:2px;}
-.aeg-authtitle{font-family:var(--font-display),Georgia,serif;font-size:18px;color:var(--ink);margin-bottom:4px;}
-.aeg-authsub{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0;}
-.aeg-tabs{display:flex;gap:6px;margin-bottom:14px;}
-.aeg-tabs button{flex:1;font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:bold;color:var(--muted);background:var(--raised);border:1px solid var(--rule2);border-radius:8px;padding:9px;cursor:pointer;}
-.aeg-tabs button.on{color:#fff;background:var(--crimson);border-color:var(--crimson);}
-.aeg-form{display:flex;flex-direction:column;gap:9px;}
-.aeg-form input[type=text],.aeg-form input[type=email],.aeg-form input[type=password],.aeg-form input:not([type]){width:100%;box-sizing:border-box;font-family:inherit;font-size:15px;color:var(--ink);background:var(--raised);border:1px solid var(--rule2);border-radius:9px;padding:11px 13px;}
-.aeg-form input:focus{outline:none;border-color:var(--crimson);}
-.aeg-pw{list-style:none;margin:2px 0 2px;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;}
-.aeg-pw li{font-size:11.5px;color:var(--muted);position:relative;padding-left:15px;}
-.aeg-pw li:before{content:'○';position:absolute;left:0;}
-.aeg-pw li.ok{color:#2e7d32;}
-.aeg-pw li.ok:before{content:'●';}
-.aeg-sub{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--body);cursor:pointer;margin-top:2px;}
-.aeg-sub input{margin-top:2px;flex:none;}
-.aeg-err{margin:2px 0 0;font-size:12.5px;color:var(--crimson);}
-.aeg-getapp{margin:12px 0 0;font-size:12px;color:var(--muted);text-align:center;}
-.aeg-getapp a{color:var(--crimson);text-decoration:underline;}
 `}</style>
   );
 }
