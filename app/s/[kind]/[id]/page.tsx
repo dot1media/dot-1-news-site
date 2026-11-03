@@ -184,6 +184,37 @@ async function getReactionTotals(id: string): Promise<{ like: number; love: numb
   return out;
 }
 
+// Comments are the same shared table the app writes to; the web mirrors them
+// read-only. Commenting still happens in the app.
+async function getComments(id: string): Promise<{ id: string; userName: string; text: string; timestamp: string }[]> {
+  try {
+    const rows = await sql`
+      SELECT id, user_name AS "userName", text, timestamp
+      FROM comments
+      WHERE content_type = 'news' AND content_id = ${id}
+      ORDER BY timestamp ASC
+      LIMIT 50`;
+    return (rows as any[]).map((r) => ({ id: String(r.id), userName: r.userName || 'Reader', text: String(r.text || ''), timestamp: r.timestamp }));
+  } catch {
+    return [];
+  }
+}
+
+function fmtRel(ts: string | null | undefined): string {
+  try {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const s = (Date.now() - d.getTime()) / 1000;
+    if (s < 60) return 'just now';
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+
 export async function generateMetadata({ params }: { params: { kind: string; id: string } }): Promise<Metadata> {
   const item = await getItem(params.kind, params.id);
   if (!item) {
@@ -221,14 +252,22 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .sourcefoot .src a{font-size:14px;color:var(--crimson);text-decoration:underline;word-break:break-word;}
 .sourcefoot .imgcredit{margin:14px 0 0;font-size:12.5px;color:var(--muted);}
 .sourcefoot .imgcredit a{color:var(--muted);text-decoration:underline;}
-.reactpanel{margin:30px 0 2px;padding:22px 20px;border:1px solid var(--rule2);border-radius:14px;background:var(--raised);}
-.reactpanel .rp-head{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--goldtext);margin-bottom:16px;}
-.reactpanel .rp-grid{display:flex;gap:10px;}
-.reactpanel .rp-stat{flex:1;text-align:center;background:var(--bg);border:1px solid var(--rule);border-radius:10px;padding:14px 6px;}
-.reactpanel .rp-stat b{display:block;font-family:var(--font-display),Georgia,serif;font-size:27px;color:var(--ink);line-height:1;}
-.reactpanel .rp-stat span{display:block;font-family:var(--font-mono),monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:8px;}
-.reactpanel .rp-cta{font-size:13px;line-height:1.5;color:var(--muted);margin:16px 0 0;}
-.reactpanel .rp-cta a{color:var(--crimson);text-decoration:underline;font-weight:bold;}
+.engage{margin:28px 0 2px;padding:18px 18px 16px;border:1px solid var(--rule2);border-radius:14px;background:var(--raised);}
+.engage .eg-label{display:block;font-family:var(--font-mono),monospace;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-bottom:11px;}
+.engage .eg-reacts{padding-bottom:16px;border-bottom:1px solid var(--rule);margin-bottom:16px;}
+.engage .eg-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.engage .eg-chips span{font-family:var(--font-mono),monospace;font-size:11.5px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:6px 13px;}
+.engage .eg-chips b{font-family:var(--font-display),Georgia,serif;font-size:15px;color:var(--ink);margin-right:5px;}
+.engage .eg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:15px;}
+.engage .eg-list li{display:flex;gap:11px;}
+.engage .eg-av{width:32px;height:32px;flex:none;border-radius:50%;background:var(--crimson);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display),Georgia,serif;font-size:15px;line-height:1;}
+.engage .eg-cbody{flex:1;min-width:0;}
+.engage .eg-cmeta{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.2px;color:var(--muted);margin-bottom:4px;}
+.engage .eg-cmeta b{color:var(--ink);font-weight:600;font-family:var(--font-body),Georgia,serif;font-size:13px;}
+.engage .eg-ctext{font-size:14.5px;line-height:1.5;color:var(--body);margin:0;word-break:break-word;}
+.engage .eg-none{font-size:13.5px;color:var(--muted);font-style:italic;margin:0;}
+.engage .eg-cta{font-size:12.5px;line-height:1.5;color:var(--muted);margin:16px 0 0;padding-top:14px;border-top:1px solid var(--rule);}
+.engage .eg-cta a{color:var(--crimson);text-decoration:underline;font-weight:bold;}
 .piece .hero{margin:26px 0 30px;background:var(--imgbg);}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
@@ -318,6 +357,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
     : (item.category || 'Dot 1 News');
   const cta = 'Carry the edition with you';
   const reactions = item.kind === 'article' ? await getReactionTotals(params.id) : null;
+  const comments = item.kind === 'article' ? await getComments(params.id) : [];
 
   const seo = { id: params.id, title: item.title, summary: item.summary, image: item.image, category: item.category, publishedAt: item.publishedAt, updatedAt: item.updatedAt };
   const graph = item.kind === 'photo' ? photoGraph(seo)
@@ -451,15 +491,35 @@ export default async function SharePage({ params }: { params: { kind: string; id
             ) : null;
           })()}
           {item.kind === 'article' && reactions && (
-            <div className="reactpanel">
-              <div className="rp-head">How readers reacted</div>
-              <div className="rp-grid">
-                <div className="rp-stat"><b>{reactions.like}</b><span>Like</span></div>
-                <div className="rp-stat"><b>{reactions.love}</b><span>Love</span></div>
-                <div className="rp-stat"><b>{reactions.pray}</b><span>Pray</span></div>
-                <div className="rp-stat"><b>{reactions.amen}</b><span>Amen</span></div>
+            <div className="engage">
+              <div className="eg-reacts">
+                <span className="eg-label">Reader reactions</span>
+                <div className="eg-chips">
+                  <span><b>{reactions.like}</b> Like</span>
+                  <span><b>{reactions.love}</b> Love</span>
+                  <span><b>{reactions.pray}</b> Pray</span>
+                  <span><b>{reactions.amen}</b> Amen</span>
+                </div>
               </div>
-              <p className="rp-cta">{reactions.total > 0 ? `${reactions.total} ${reactions.total === 1 ? 'reaction' : 'reactions'} so far. ` : 'Be the first to react. '}React in the <a href={APP_STORE}>Dot 1 News app</a>, and it shows up right here.</p>
+              <div className="eg-comments">
+                <span className="eg-label">Comments{comments.length ? ` (${comments.length})` : ''}</span>
+                {comments.length > 0 ? (
+                  <ul className="eg-list">
+                    {comments.slice(-12).map((c) => (
+                      <li key={c.id}>
+                        <div className="eg-av">{(c.userName || 'R').charAt(0).toUpperCase()}</div>
+                        <div className="eg-cbody">
+                          <div className="eg-cmeta"><b>{c.userName}</b> &middot; {fmtRel(c.timestamp)}</div>
+                          <p className="eg-ctext">{c.text}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="eg-none">No comments yet.</p>
+                )}
+                <p className="eg-cta">React and join the conversation in the <a href={APP_STORE}>Dot 1 News app</a>, and it shows up right here.</p>
+              </div>
             </div>
           )}
           {item.kind === 'article' && (((item.sources && item.sources.length > 0) || item.imageCredit) ? (
