@@ -61,7 +61,7 @@ async function getEdition(): Promise<{ news: ReaderItem[]; photos: ReaderItem[];
                  hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
                  COALESCE(verification_status, 'verified') AS verification_status
             FROM news_stories
-            WHERE review_status = 'approved' ORDER BY COALESCE(reviewed_at, created_at) DESC LIMIT 6`;
+            WHERE review_status = 'approved' ORDER BY display_order ASC NULLS LAST, COALESCE(reviewed_at, created_at) DESC LIMIT 6`;
         } catch {
           return await sql`SELECT id, title, summary, image, category, editor_note, score_confidence,
                  bai_scriptural_consistency, bai_doctrinal_integrity, bai_moral_framework, bai_anthropology, bai_teleology,
