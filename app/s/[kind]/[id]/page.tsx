@@ -7,6 +7,7 @@ import { newsArticleGraph, photoGraph, videoGraph } from '@/lib/seo';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { isImageUrl, isVideoUrl, videoMime } from '@/lib/media';
+import ArticleEngage from '@/app/components/ArticleEngage';
 
 export const dynamic = 'force-dynamic';
 
@@ -473,45 +474,11 @@ export default async function SharePage({ params }: { params: { kind: string; id
             ) : null;
           })()}
           {item.kind === 'article' && reactions && (
-            <div className="engage">
-              <div className="eg-reacts">
-                <span className="eg-label">Reader reactions</span>
-                <div className="eg-chips">
-                  <span><b>{reactions.like}</b> Like</span>
-                  <span><b>{reactions.love}</b> Love</span>
-                  <span><b>{reactions.pray}</b> Pray</span>
-                  <span><b>{reactions.amen}</b> Amen</span>
-                </div>
-              </div>
-              <div className="eg-comments">
-                <span className="eg-label">Comments{commentCount ? ` (${commentCount})` : ''}</span>
-                <div className="eg-locked">
-                  <div className="eg-skel" aria-hidden="true">
-                    {[['38%', '88%'], ['30%', '72%'], ['44%', '80%']].map(([w1, w2], i) => (
-                      <div className="eg-srow" key={i}>
-                        <div className="eg-sav" />
-                        <div className="eg-slines">
-                          <span className="eg-sl" style={{ width: w1 }} />
-                          <span className="eg-sl" style={{ width: w2 }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="eg-lock">
-                    <div className="eg-lockcard">
-                      <div className="eg-lockicon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                      </div>
-                      <div className="eg-locktitle">
-                        {commentCount > 0 ? `${commentCount} ${commentCount === 1 ? 'comment' : 'comments'} in the app` : 'The conversation is in the app'}
-                      </div>
-                      <p className="eg-locktext">Download Dot 1 News to read the comments and add your own.</p>
-                      <a className="eg-lockbtn" href={APP_STORE}>Get the app to see comments</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ArticleEngage
+              articleId={params.id}
+              initialReactions={{ like: reactions.like, love: reactions.love, pray: reactions.pray, amen: reactions.amen }}
+              initialCommentCount={commentCount}
+            />
           )}
           {item.kind === 'article' && (((item.sources && item.sources.length > 0) || item.imageCredit) ? (
             <div className="sourcefoot">
