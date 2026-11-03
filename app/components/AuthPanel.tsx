@@ -1,9 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { type AppUser, login, register } from '@/lib/appApi';
+import { useState, useEffect } from 'react';
+import { type AppUser, login, register, signInWithApple } from '@/lib/appApi';
 
 const APP_STORE = 'https://apps.apple.com/us/app/dot-1-news/id6757212352';
+
+// Sign in with Apple (web) is enabled only once these are configured, so the
+// button never appears broken before the Apple Developer setup is done.
+const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || '';
+const APPLE_REDIRECT_URI = process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI || '';
+const APPLE_ENABLED = !!(APPLE_CLIENT_ID && APPLE_REDIRECT_URI);
+const APPLE_SDK = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
 
 // Mirror of the backend password policy, so we can guide before submitting.
 const PW_RULES: { test: (s: string) => boolean; label: string }[] = [
@@ -41,7 +48,52 @@ export default function AuthPanel({
   const [email, setEmail] = useState('');
   const [subscribe, setSubscribe] = useState(true);
 
+  const [appleReady, setAppleReady] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
+
+  // Load Apple's JS SDK once and initialize it, only when configured.
+  useEffect(() => {
+    if (!APPLE_ENABLED) return;
+    function init() {
+      const AppleID = (window as any).AppleID;
+      if (!AppleID) return;
+      try {
+        AppleID.auth.init({ clientId: APPLE_CLIENT_ID, scope: 'name email', redirectURI: APPLE_REDIRECT_URI, usePopup: true });
+        setAppleReady(true);
+      } catch { /* leave the button hidden if init fails */ }
+    }
+    if ((window as any).AppleID) { init(); return; }
+    let s = document.querySelector<HTMLScriptElement>('script[data-appleid]');
+    if (!s) {
+      s = document.createElement('script');
+      s.src = APPLE_SDK; s.async = true; s.defer = true; s.setAttribute('data-appleid', '1');
+      document.head.appendChild(s);
+    }
+    s.addEventListener('load', init);
+    return () => { s?.removeEventListener('load', init); };
+  }, []);
+
   const pwOk = PW_RULES.every((r) => r.test(password));
+
+  async function doApple() {
+    if (appleBusy) return;
+    setError(''); setAppleBusy(true);
+    try {
+      const data = await (window as any).AppleID.auth.signIn();
+      const idToken: string | undefined = data?.authorization?.id_token;
+      if (!idToken) throw new Error('Apple did not return a token. Please try again.');
+      const nm = data?.user?.name;
+      const fullName = nm ? [nm.firstName, nm.lastName].filter(Boolean).join(' ').trim() || undefined : undefined;
+      onSignedIn(await signInWithApple(idToken, fullName, data?.user?.email));
+    } catch (err: any) {
+      // The user closing the Apple popup is not an error worth showing.
+      if (err?.error !== 'popup_closed_by_user' && err?.error !== 'user_cancelled_authorize') {
+        setError(err?.message || 'Apple sign-in did not complete. Please try again.');
+      }
+    } finally {
+      setAppleBusy(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,6 +127,16 @@ export default function AuthPanel({
           <p className="apn-sub">{subtitle}</p>
         </div>
       </div>
+
+      {APPLE_ENABLED && appleReady && (
+        <>
+          <button type="button" className="apn-apple" onClick={doApple} disabled={appleBusy}>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11.18 8.47c-.02-1.77 1.45-2.62 1.51-2.66-.82-1.2-2.1-1.37-2.56-1.39-1.09-.11-2.13.64-2.68.64-.55 0-1.41-.62-2.32-.61-1.19.02-2.29.69-2.9 1.76-1.24 2.15-.32 5.33.89 7.07.59.85 1.29 1.81 2.21 1.77.89-.04 1.22-.57 2.3-.57 1.07 0 1.37.57 2.31.55.95-.02 1.56-.87 2.14-1.72.67-.99.95-1.94.96-1.99-.02-.01-1.84-.71-1.86-2.8zM9.43 3.3c.49-.6.82-1.42.73-2.25-.71.03-1.56.47-2.07 1.06-.45.53-.85 1.37-.74 2.18.79.06 1.59-.4 2.08-.99z"/></svg>
+            {appleBusy ? 'Connecting…' : 'Continue with Apple'}
+          </button>
+          <div className="apn-or"><span>or</span></div>
+        </>
+      )}
 
       <div className="apn-tabs">
         <button type="button" className={mode === 'login' ? 'on' : ''} onClick={() => { setMode('login'); setError(''); }}>Sign in</button>
@@ -125,6 +187,11 @@ function StyleTag() {
 .apn-head svg{color:var(--crimson);flex:none;margin-top:2px;}
 .apn-title{font-family:var(--font-display),Georgia,serif;font-size:18px;color:var(--ink);margin-bottom:4px;}
 .apn-sub{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0;}
+.apn-apple{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:#000;color:#fff;border:none;border-radius:8px;padding:12px;font-family:var(--font-body),system-ui,sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:14px;}
+.apn-apple:disabled{opacity:.6;cursor:default;}
+.apn-apple svg{margin-top:-1px;}
+.apn-or{display:flex;align-items:center;gap:12px;margin:0 0 14px;color:var(--muted);font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;}
+.apn-or:before,.apn-or:after{content:'';flex:1;height:1px;background:var(--rule2);}
 .apn-tabs{display:flex;gap:6px;margin-bottom:14px;}
 .apn-tabs button{flex:1;font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:bold;color:var(--muted);background:var(--raised);border:1px solid var(--rule2);border-radius:8px;padding:9px;cursor:pointer;}
 .apn-tabs button.on{color:#fff;background:var(--crimson);border-color:var(--crimson);}

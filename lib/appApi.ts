@@ -150,6 +150,15 @@ export async function register(input: RegisterInput, subscribeDaily: boolean): P
   return user;
 }
 
+/** Complete a Sign in with Apple (web) by sending Apple's identity token to the
+ *  backend, which verifies it and returns the same user + session token as a
+ *  password login. `fullName`/`email` are only present on the first authorization. */
+export async function signInWithApple(identityToken: string, fullName?: string, email?: string): Promise<AppUser> {
+  const res = await mutate<any>('auth.signInWithApple', { identityToken, fullName, email });
+  if (!res?.sessionToken) throw new Error('Apple sign-in did not complete. Please try again.');
+  return store(res);
+}
+
 export async function logout(): Promise<void> {
   try { await mutate('auth.logout'); } catch {}
   setToken(null);
