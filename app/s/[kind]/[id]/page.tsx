@@ -221,14 +221,14 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .sourcefoot .src a{font-size:14px;color:var(--crimson);text-decoration:underline;word-break:break-word;}
 .sourcefoot .imgcredit{margin:14px 0 0;font-size:12.5px;color:var(--muted);}
 .sourcefoot .imgcredit a{color:var(--muted);text-decoration:underline;}
-.reactfoot{margin:24px 0 2px;padding-top:18px;border-top:1px solid var(--imgbg);}
-.reactfoot .react-label{display:block;font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-bottom:11px;}
-.reactfoot .react-list{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:20px;}
-.reactfoot .react-list li{font-family:var(--font-mono),monospace;font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);}
-.reactfoot .react-list b{color:var(--ink);font-size:17px;margin-right:6px;font-family:var(--font-display),Georgia,serif;}
-.reactfoot .react-none{font-size:13.5px;color:var(--muted);margin:0;font-style:italic;}
-.reactfoot .react-cta{font-size:12.5px;color:var(--muted);margin:13px 0 0;}
-.reactfoot .react-cta a{color:var(--crimson);text-decoration:underline;}
+.reactpanel{margin:30px 0 2px;padding:22px 20px;border:1px solid var(--rule2);border-radius:14px;background:var(--raised);}
+.reactpanel .rp-head{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--goldtext);margin-bottom:16px;}
+.reactpanel .rp-grid{display:flex;gap:10px;}
+.reactpanel .rp-stat{flex:1;text-align:center;background:var(--bg);border:1px solid var(--rule);border-radius:10px;padding:14px 6px;}
+.reactpanel .rp-stat b{display:block;font-family:var(--font-display),Georgia,serif;font-size:27px;color:var(--ink);line-height:1;}
+.reactpanel .rp-stat span{display:block;font-family:var(--font-mono),monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.reactpanel .rp-cta{font-size:13px;line-height:1.5;color:var(--muted);margin:16px 0 0;}
+.reactpanel .rp-cta a{color:var(--crimson);text-decoration:underline;font-weight:bold;}
 .piece .hero{margin:26px 0 30px;background:var(--imgbg);}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
@@ -450,6 +450,18 @@ export default async function SharePage({ params }: { params: { kind: string; id
               </div>
             ) : null;
           })()}
+          {item.kind === 'article' && reactions && (
+            <div className="reactpanel">
+              <div className="rp-head">How readers reacted</div>
+              <div className="rp-grid">
+                <div className="rp-stat"><b>{reactions.like}</b><span>Like</span></div>
+                <div className="rp-stat"><b>{reactions.love}</b><span>Love</span></div>
+                <div className="rp-stat"><b>{reactions.pray}</b><span>Pray</span></div>
+                <div className="rp-stat"><b>{reactions.amen}</b><span>Amen</span></div>
+              </div>
+              <p className="rp-cta">{reactions.total > 0 ? `${reactions.total} ${reactions.total === 1 ? 'reaction' : 'reactions'} so far. ` : 'Be the first to react. '}React in the <a href={APP_STORE}>Dot 1 News app</a>, and it shows up right here.</p>
+            </div>
+          )}
           {item.kind === 'article' && (((item.sources && item.sources.length > 0) || item.imageCredit) ? (
             <div className="sourcefoot">
               {item.sources && item.sources.length > 0 && (
@@ -467,22 +479,6 @@ export default async function SharePage({ params }: { params: { kind: string; id
               )}
             </div>
           ) : null)}
-          {item.kind === 'article' && reactions && (
-            <div className="reactfoot">
-              <span className="react-label">Reader reactions</span>
-              {reactions.total > 0 ? (
-                <ul className="react-list">
-                  <li><b>{reactions.like}</b> Like</li>
-                  <li><b>{reactions.love}</b> Love</li>
-                  <li><b>{reactions.pray}</b> Pray</li>
-                  <li><b>{reactions.amen}</b> Amen</li>
-                </ul>
-              ) : (
-                <p className="react-none">No reactions yet. Be the first, in the app.</p>
-              )}
-              <p className="react-cta">React to this story in the <a href={APP_STORE}>Dot 1 News app</a>.</p>
-            </div>
-          )}
         </article>
         <section className="callout">
           <h3>{cta}.</h3>
