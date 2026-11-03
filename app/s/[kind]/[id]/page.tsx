@@ -184,34 +184,14 @@ async function getReactionTotals(id: string): Promise<{ like: number; love: numb
   return out;
 }
 
-// Comments are the same shared table the app writes to; the web mirrors them
-// read-only. Commenting still happens in the app.
-async function getComments(id: string): Promise<{ id: string; userName: string; text: string; timestamp: string }[]> {
+// Comments are read and written in the app. The web shows only how many there
+// are, behind a locked teaser, so no comment text is exposed on the open web.
+async function getCommentCount(id: string): Promise<number> {
   try {
-    const rows = await sql`
-      SELECT id, user_name AS "userName", text, timestamp
-      FROM comments
-      WHERE content_type = 'news' AND content_id = ${id}
-      ORDER BY timestamp ASC
-      LIMIT 50`;
-    return (rows as any[]).map((r) => ({ id: String(r.id), userName: r.userName || 'Reader', text: String(r.text || ''), timestamp: r.timestamp }));
+    const r = await sql`SELECT COUNT(*)::int AS n FROM comments WHERE content_type = 'news' AND content_id = ${id}`;
+    return Number((r as any[])[0]?.n || 0);
   } catch {
-    return [];
-  }
-}
-
-function fmtRel(ts: string | null | undefined): string {
-  try {
-    if (!ts) return '';
-    const d = new Date(ts);
-    const s = (Date.now() - d.getTime()) / 1000;
-    if (s < 60) return 'just now';
-    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-    if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } catch {
-    return '';
+    return 0;
   }
 }
 
@@ -258,16 +238,18 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .engage .eg-chips{display:flex;flex-wrap:wrap;gap:8px;}
 .engage .eg-chips span{font-family:var(--font-mono),monospace;font-size:11.5px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);background:var(--bg);border:1px solid var(--rule);border-radius:999px;padding:6px 13px;}
 .engage .eg-chips b{font-family:var(--font-display),Georgia,serif;font-size:15px;color:var(--ink);margin-right:5px;}
-.engage .eg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:15px;}
-.engage .eg-list li{display:flex;gap:11px;}
-.engage .eg-av{width:32px;height:32px;flex:none;border-radius:50%;background:var(--crimson);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display),Georgia,serif;font-size:15px;line-height:1;}
-.engage .eg-cbody{flex:1;min-width:0;}
-.engage .eg-cmeta{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.2px;color:var(--muted);margin-bottom:4px;}
-.engage .eg-cmeta b{color:var(--ink);font-weight:600;font-family:var(--font-body),Georgia,serif;font-size:13px;}
-.engage .eg-ctext{font-size:14.5px;line-height:1.5;color:var(--body);margin:0;word-break:break-word;}
-.engage .eg-none{font-size:13.5px;color:var(--muted);font-style:italic;margin:0;}
-.engage .eg-cta{font-size:12.5px;line-height:1.5;color:var(--muted);margin:16px 0 0;padding-top:14px;border-top:1px solid var(--rule);}
-.engage .eg-cta a{color:var(--crimson);text-decoration:underline;font-weight:bold;}
+.engage .eg-locked{position:relative;border-radius:12px;overflow:hidden;min-height:168px;}
+.engage .eg-skel{filter:blur(4px);opacity:.5;padding:4px 2px;pointer-events:none;user-select:none;}
+.engage .eg-srow{display:flex;gap:11px;margin-bottom:16px;}
+.engage .eg-sav{width:32px;height:32px;flex:none;border-radius:50%;background:var(--rule2);}
+.engage .eg-slines{flex:1;display:flex;flex-direction:column;gap:8px;padding-top:5px;}
+.engage .eg-sl{height:9px;border-radius:5px;background:var(--rule2);}
+.engage .eg-lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;}
+.engage .eg-lockcard{text-align:center;background:var(--bg);border:1px solid var(--rule2);border-radius:12px;padding:20px 22px;max-width:320px;box-shadow:0 8px 26px rgba(20,16,12,.12);}
+.engage .eg-lockicon{color:var(--crimson);margin-bottom:10px;display:flex;justify-content:center;}
+.engage .eg-locktitle{font-family:var(--font-display),Georgia,serif;font-size:17.5px;color:var(--ink);margin-bottom:6px;}
+.engage .eg-locktext{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0 auto 15px;max-width:250px;}
+.engage .eg-lockbtn{display:inline-block;background:var(--crimson);color:#fff;font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:bold;padding:11px 20px;border-radius:8px;text-decoration:none;}
 .piece .hero{margin:26px 0 30px;background:var(--imgbg);}
 .piece .hero img{width:100%;max-height:520px;object-fit:cover;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
@@ -357,7 +339,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
     : (item.category || 'Dot 1 News');
   const cta = 'Carry the edition with you';
   const reactions = item.kind === 'article' ? await getReactionTotals(params.id) : null;
-  const comments = item.kind === 'article' ? await getComments(params.id) : [];
+  const commentCount = item.kind === 'article' ? await getCommentCount(params.id) : 0;
 
   const seo = { id: params.id, title: item.title, summary: item.summary, image: item.image, category: item.category, publishedAt: item.publishedAt, updatedAt: item.updatedAt };
   const graph = item.kind === 'photo' ? photoGraph(seo)
@@ -502,23 +484,32 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 </div>
               </div>
               <div className="eg-comments">
-                <span className="eg-label">Comments{comments.length ? ` (${comments.length})` : ''}</span>
-                {comments.length > 0 ? (
-                  <ul className="eg-list">
-                    {comments.slice(-12).map((c) => (
-                      <li key={c.id}>
-                        <div className="eg-av">{(c.userName || 'R').charAt(0).toUpperCase()}</div>
-                        <div className="eg-cbody">
-                          <div className="eg-cmeta"><b>{c.userName}</b> &middot; {fmtRel(c.timestamp)}</div>
-                          <p className="eg-ctext">{c.text}</p>
+                <span className="eg-label">Comments{commentCount ? ` (${commentCount})` : ''}</span>
+                <div className="eg-locked">
+                  <div className="eg-skel" aria-hidden="true">
+                    {[['38%', '88%'], ['30%', '72%'], ['44%', '80%']].map(([w1, w2], i) => (
+                      <div className="eg-srow" key={i}>
+                        <div className="eg-sav" />
+                        <div className="eg-slines">
+                          <span className="eg-sl" style={{ width: w1 }} />
+                          <span className="eg-sl" style={{ width: w2 }} />
                         </div>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
-                ) : (
-                  <p className="eg-none">No comments yet.</p>
-                )}
-                <p className="eg-cta">React and join the conversation in the <a href={APP_STORE}>Dot 1 News app</a>, and it shows up right here.</p>
+                  </div>
+                  <div className="eg-lock">
+                    <div className="eg-lockcard">
+                      <div className="eg-lockicon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                      </div>
+                      <div className="eg-locktitle">
+                        {commentCount > 0 ? `${commentCount} ${commentCount === 1 ? 'comment' : 'comments'} in the app` : 'The conversation is in the app'}
+                      </div>
+                      <p className="eg-locktext">Download Dot 1 News to read the comments and add your own.</p>
+                      <a className="eg-lockbtn" href={APP_STORE}>Get the app to see comments</a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
