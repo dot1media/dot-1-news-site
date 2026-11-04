@@ -87,9 +87,13 @@ export default function AuthPanel({
       onSignedIn(await signInWithApple(idToken, fullName, data?.user?.email));
     } catch (err: any) {
       // The user closing the Apple popup is not an error worth showing.
-      if (err?.error !== 'popup_closed_by_user' && err?.error !== 'user_cancelled_authorize') {
-        setError(err?.message || 'Apple sign-in did not complete. Please try again.');
-      }
+      const code = err?.error;
+      if (code === 'popup_closed_by_user' || code === 'user_cancelled_authorize') return;
+      // Surface the real reason (Apple's error code, or the backend's message)
+      // so configuration problems are diagnosable instead of a generic failure.
+      console.error('Apple web sign-in failed:', err);
+      const detail = code || err?.message;
+      setError(detail ? `Apple sign-in failed (${detail}).` : 'Apple sign-in did not complete. Please try again.');
     } finally {
       setAppleBusy(false);
     }
