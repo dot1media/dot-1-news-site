@@ -155,7 +155,16 @@ export async function register(input: RegisterInput, subscribeDaily: boolean): P
  *  password login. `fullName`/`email` are only present on the first authorization. */
 export async function signInWithApple(identityToken: string, fullName?: string, email?: string): Promise<AppUser> {
   const res = await mutate<any>('auth.signInWithApple', { identityToken, fullName, email });
-  if (!res?.sessionToken) throw new Error('Apple sign-in did not complete. Please try again.');
+  if (!res?.sessionToken) {
+    // The backend answered but gave us no session token. Surface what it did
+    // return so the cause is visible instead of a generic failure.
+    console.error('Apple sign-in: backend returned no session token. Response:', res);
+    throw new Error(
+      res?.message
+        ? `Apple sign-in failed: ${res.message}`
+        : 'Apple sign-in did not complete (no session token returned). Please try again.',
+    );
+  }
   return store(res);
 }
 
