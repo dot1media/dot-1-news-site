@@ -277,14 +277,16 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .callout p{margin:0 auto 22px;font-size:15.5px;line-height:1.7;color:var(--body);max-width:520px;}
 .callout .btn{display:inline-block;background:var(--crimson);color:#fff;font-size:15.5px;font-weight:bold;padding:16px 30px;border-radius:8px;}
 .callout .fine{margin:14px 0 0;font-size:12.5px;color:var(--muted);}
-.scorecard{margin:20px 0 4px;}
-.scorecard>summary{list-style:none;cursor:pointer;margin:0 !important;}
-.scorecard>summary::-webkit-details-marker{display:none;}
-.scorecard>summary{outline:none;}
-.scorecard>summary:focus-visible{box-shadow:0 0 0 2px var(--crimson);}
-.scorecard .ls-toggle{align-self:center;white-space:nowrap;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;color:var(--crimson);display:inline-flex;align-items:center;gap:5px;}
+.scorecard{margin:20px 0 4px;border-top:1px solid var(--rule2);padding-top:16px;}
+.scorecard .ls-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;color:var(--muted);margin-bottom:12px;}
+.scoremore{margin-top:4px;}
+.scoremore>summary{list-style:none;cursor:pointer;margin:0 !important;}
+.scoremore>summary::-webkit-details-marker{display:none;}
+.scoremore>summary{outline:none;}
+.scoremore>summary:focus-visible{box-shadow:0 0 0 2px var(--crimson);}
+.scorecard .ls-toggle{white-space:nowrap;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;color:var(--crimson);display:inline-flex;align-items:center;gap:5px;}
 .scorecard .ls-toggle:after{content:'\\203A';font-size:15px;transition:transform .2s ease;display:inline-block;}
-.scorecard[open] .ls-toggle:after{transform:rotate(90deg);}
+.scoremore[open] .ls-toggle:after{transform:rotate(90deg);}
 .scorebreak{border:1px solid var(--rule2);border-top:none;background:var(--raised);padding:6px 20px 18px;}
 .sb-idx{padding:16px 0 4px;border-top:1px solid var(--rule);}
 .sb-idx:first-child{border-top:none;}
@@ -443,22 +445,13 @@ export default async function SharePage({ params }: { params: { kind: string; id
               { key: 'HII', name: 'Humanities Impact', val: s.hii, note: notes.HII },
             ];
             return (
-            <details className="scorecard">
-              <summary className="leadscore">
-                <div className="ls-detail">
-                  <div className="ls-label">D1&#8209;4LS · Four&#8209;Lens Assessment</div>
-                  <div className="ls-bars">
-                    <span title="Biblical Alignment">BAI {s.bai}<i>/10</i></span>
-                    <span title="Prophetic Significance">PSI {s.psi}<i>/10</i></span>
-                    <span title="Source Credibility">SCI {s.sci}<i>/10</i></span>
-                    <span title="Humanities Impact">HII {s.hii}<i>/10</i></span>
-                  </div>
-                  <div className="ls-sub">Composite {s.overall}/40 · {band.label}{s.confidence ? ` · ${s.confidence} confidence` : ''}</div>
-                </div>
-                <span className="ls-toggle" aria-hidden="true">Why this assessment</span>
-              </summary>
-              <div className="scorebreak">
-                <ScoreViews bai={s.bai} psi={s.psi} sci={s.sci} hii={s.hii} />
+            <div className="scorecard">
+              <div className="ls-label">D1&#8209;4LS · Four&#8209;Lens Assessment</div>
+              <ScoreViews bai={s.bai} psi={s.psi} sci={s.sci} hii={s.hii} />
+              <div className="ls-sub">Composite {s.overall}/40 · {band.label}{s.confidence ? ` · ${s.confidence} confidence` : ''}</div>
+              <details className="scoremore">
+                <summary className="ls-toggle">Why this assessment</summary>
+                <div className="scorebreak">
                 {notice.level !== 'none' && (
                   <p className={'sb-alert' + (notice.level === 'warning' ? ' warn' : '')}>{notice.text}</p>
                 )}
@@ -495,8 +488,9 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 </div>
                 <p className="sb-note">Read the four lenses together, not the total. A high score does not mean a story is true, morally good, prophetically fulfilled, or endorsed by Dot 1 News; a low score does not mean it is false or unimportant. Source Credibility concerns evidence only and is separate from theological alignment.</p>
                 <p className="sb-ver">D1&#8209;4LS {s.instrumentVersion ? `v${s.instrumentVersion}` : 'assessment'} · an experimental framework still being tested. <a className="ln" href="/d1-4ls">How the scoring works</a></p>
-              </div>
-            </details>
+                </div>
+              </details>
+            </div>
             );
           })()}
           {item.kind !== 'article' && (
