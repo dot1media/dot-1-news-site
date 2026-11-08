@@ -261,6 +261,9 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .piece .body p:first-child::first-letter{float:left;font-family:var(--font-display),Georgia,serif;
   font-size:66px;line-height:.78;font-weight:700;color:var(--crimson);padding:4px 10px 0 0;}
 .piece .body a{color:var(--crimson);text-decoration:underline;text-underline-offset:2px;}
+.piece .lensblock{margin:32px 0;padding:20px 22px;border-left:3px solid var(--crimson);background:var(--raised);border-radius:0 10px 10px 0;}
+.piece .lensblock .lh{font-family:var(--font-mono),monospace;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--goldtext);margin-bottom:10px;}
+.piece .lensblock p{margin:0;font-size:17.5px;line-height:1.72;color:var(--body);font-style:italic;}
 .piece .sum a{color:var(--crimson);text-decoration:underline;text-underline-offset:2px;}
 .piece .why{margin:28px 0 30px;}
 .piece .why .t{font-size:15.5px;}
@@ -379,9 +382,22 @@ export default async function SharePage({ params }: { params: { kind: string; id
           {item.summary && <p className="sum">{item.summary}</p>}
           {item.kind === 'article' && item.content && (
             <div className="body">
-              {item.content.split(/\n{2,}/).map((para, i) => {
+              {/* Force the editor's "Through the Lens" reflection onto its own
+                  block even when no blank line precedes it, and set it apart. */}
+              {item.content.replace(/\s*(Through the Lens\b:?)/gi, '\n\n$1').split(/\n{2,}/).map((para, i) => {
                 const t = para.trim();
-                return t ? <p key={i}>{t}</p> : null;
+                if (!t) return null;
+                const m = /^through the lens\b:?\s*/i.exec(t);
+                if (m) {
+                  const reflection = t.slice(m[0].length).trim();
+                  return (
+                    <aside className="lensblock" key={i}>
+                      <div className="lh">Through the Lens</div>
+                      <p>{reflection}</p>
+                    </aside>
+                  );
+                }
+                return <p key={i}>{t}</p>;
               })}
             </div>
           )}
