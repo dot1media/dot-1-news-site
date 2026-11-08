@@ -251,8 +251,9 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .engage .eg-locktitle{font-family:var(--font-display),Georgia,serif;font-size:17.5px;color:var(--ink);margin-bottom:6px;}
 .engage .eg-locktext{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0 auto 15px;max-width:250px;}
 .engage .eg-lockbtn{display:inline-block;background:var(--crimson);color:#fff;font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:bold;padding:11px 20px;border-radius:8px;text-decoration:none;}
-.piece .hero{margin:26px 0 30px;background:var(--imgbg);}
-.piece .hero img{width:100%;max-height:520px;object-fit:cover;}
+.piece .hero{position:relative;margin:26px 0 30px;background:var(--imgbg);}
+.piece .hero img{width:100%;max-height:520px;object-fit:cover;display:block;}
+.piece .hero .illus{position:absolute;left:12px;bottom:12px;font-family:var(--font-mono),monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;background:rgba(16,14,12,.8);color:#f3efe6;padding:5px 9px;border-radius:4px;}
 .piece .player{margin:26px 0 30px;background:#14120F;}
 .piece .player video{width:100%;aspect-ratio:16/9;display:block;background:#14120F;}
 .piece .sum{margin:0 0 26px;font-size:21px;line-height:1.65;color:var(--body);font-weight:400;}
@@ -311,6 +312,16 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 .tags .tag:hover{color:#fff;background:var(--crimson);border-color:var(--crimson);}
 .backline{max-width:760px;margin:34px auto 0;padding-top:20px;border-top:1px solid var(--imgbg);font-size:13px;color:var(--crimson);font-weight:bold;}
 @media(max-width:640px){.piece{padding:28px 0 12px;}.piece h1{font-size:29px;}.piece .sum{font-size:17px;}.callout{padding:26px 20px;}.callout h3{font-size:21px;}}`;
+
+// Mark imagery that illustrates rather than documents the event, so a reader is
+// never led to read a decorative stock photo as reporting. Kept deliberately
+// narrow: only clearly-decorative libraries and explicit "stock/file photo"
+// credits, so genuine news photography is never mislabeled.
+const DECORATIVE_STOCK = /(unsplash|pexels|pixabay)\./i;
+function isIllustrative(item: { imageCredit?: string | null; imageCreditUrl?: string | null }): boolean {
+  const hay = `${item.imageCredit || ''} ${item.imageCreditUrl || ''}`;
+  return DECORATIVE_STOCK.test(hay) || /\b(stock photo|stock image|illustration|illustrative|file photo)\b/i.test(item.imageCredit || '');
+}
 
 export default async function SharePage({ params }: { params: { kind: string; id: string } }) {
   const item = await getItem(params.kind, params.id);
@@ -378,7 +389,12 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 Your browser cannot play this video here. It is also in the Dot 1 News app.
               </video>
             </div>
-          ) : item.image ? <div className="hero"><img src={item.image} alt="" /></div> : null}
+          ) : item.image ? (
+            <div className="hero">
+              <img src={item.image} alt="" />
+              {item.kind === 'article' && isIllustrative(item) && <span className="illus">Illustration</span>}
+            </div>
+          ) : null}
           {item.summary && <p className="sum">{item.summary}</p>}
           {item.kind === 'article' && item.content && (
             <div className="body">
@@ -509,7 +525,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 </div>
               )}
               {item.imageCredit && (
-                <p className="imgcredit">Image: {item.imageCreditUrl ? <a href={item.imageCreditUrl} target="_blank" rel="noreferrer noopener">{item.imageCredit}</a> : item.imageCredit}</p>
+                <p className="imgcredit">{isIllustrative(item) ? 'Illustration' : 'Image'}: {item.imageCreditUrl ? <a href={item.imageCreditUrl} target="_blank" rel="noreferrer noopener">{item.imageCredit}</a> : item.imageCredit}{isIllustrative(item) ? '. Illustrative, not a photograph of the event.' : ''}</p>
               )}
             </div>
           ) : null)}
