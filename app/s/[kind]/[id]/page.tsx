@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { sql } from '@/lib/db';
 import { clip, APP_STORE, SITE_URL } from '@/lib/theme';
 import { scoreFromRow, breakdownFromRow, StoryScore, IndexBreakdown, compositeBand, sciNotice, profileBalance } from '@/lib/scoreRow';
+import ScoreViews from '@/components/ScoreViews';
 import { newsArticleGraph, photoGraph, videoGraph } from '@/lib/seo';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
@@ -457,6 +458,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 <span className="ls-toggle" aria-hidden="true">Why this assessment</span>
               </summary>
               <div className="scorebreak">
+                <ScoreViews bai={s.bai} psi={s.psi} sci={s.sci} hii={s.hii} />
                 {notice.level !== 'none' && (
                   <p className={'sb-alert' + (notice.level === 'warning' ? ' warn' : '')}>{notice.text}</p>
                 )}
