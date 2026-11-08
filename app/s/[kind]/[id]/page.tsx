@@ -35,6 +35,7 @@ interface ShareItem {
   imageCredit?: string | null;
   imageCreditUrl?: string | null;
   imageRightsRestricted?: boolean | null;
+  imageIllustrative?: boolean | null;
 }
 
 // Original-source links may be a JSON array (citations) or a single source_url.
@@ -109,7 +110,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
                sci_primary_source_access, sci_verification, sci_transparency, sci_track_record, sci_editorial_standards,
                hii_human_dignity, hii_compassion_empathy, hii_societal_impact, hii_justice_responsibility, hii_christ_modeled_care,
                d14ls_interpretation, d14ls_index_notes, d14ls_instrument_version,
-               source_url, source_name, citations, image_credit, image_credit_url, image_rights_restricted,
+               source_url, source_name, citations, image_credit, image_credit_url, image_rights_restricted, image_illustrative,
                COALESCE(verification_status, 'verified') AS verification_status, reviewed_at, created_at, author, tags
           FROM news_stories WHERE id = ${id} AND review_status = 'approved' LIMIT 1`;
         x = r[0];
@@ -127,7 +128,7 @@ async function getItem(kind: string, id: string): Promise<ShareItem | null> {
           x = r[0];
         }
       }
-      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author, tags: x.tags, sources: parseSources(x), imageCredit: x.image_credit || null, imageCreditUrl: x.image_credit_url || null, imageRightsRestricted: !!x.image_rights_restricted };
+      if (x) return { kind: 'article', title: x.title, summary: x.summary, content: x.content, image: x.image, category: x.category, editorNote: x.editor_note, verificationStatus: x.verification_status || 'verified', score: scoreFromRow(x), scoreBreakdown: breakdownFromRow(x), publishedAt: x.reviewed_at || x.created_at, updatedAt: x.reviewed_at || x.created_at, author: x.author, tags: x.tags, sources: parseSources(x), imageCredit: x.image_credit || null, imageCreditUrl: x.image_credit_url || null, imageRightsRestricted: !!x.image_rights_restricted, imageIllustrative: !!x.image_illustrative };
     } else if (kind === 'p' || kind === 'photo') {
       // credit_url is added by the editorial app on first sourced publish; query defensively.
       let x: any;
@@ -318,7 +319,10 @@ const CSS = `.piece{max-width:700px;margin:0 auto;padding:44px 0 20px;}
 // narrow: only clearly-decorative libraries and explicit "stock/file photo"
 // credits, so genuine news photography is never mislabeled.
 const DECORATIVE_STOCK = /(unsplash|pexels|pixabay)\./i;
-function isIllustrative(item: { imageCredit?: string | null; imageCreditUrl?: string | null }): boolean {
+function isIllustrative(item: { imageCredit?: string | null; imageCreditUrl?: string | null; imageIllustrative?: boolean | null }): boolean {
+  // An explicit editor mark forces it; otherwise fall back to the heuristic so
+  // unmarked decorative stock is still caught.
+  if (item.imageIllustrative === true) return true;
   const hay = `${item.imageCredit || ''} ${item.imageCreditUrl || ''}`;
   return DECORATIVE_STOCK.test(hay) || /\b(stock photo|stock image|illustration|illustrative|file photo)\b/i.test(item.imageCredit || '');
 }
