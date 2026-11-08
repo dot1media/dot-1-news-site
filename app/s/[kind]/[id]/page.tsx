@@ -524,9 +524,20 @@ export default async function SharePage({ params }: { params: { kind: string; id
                 <div className="src">
                   <span className="src-label">{item.sources.length > 1 ? 'Original sources' : 'Original source'}</span>
                   <ul>
-                    {item.sources.map((sc, i) => (
-                      <li key={i}><a href={sc.url} target="_blank" rel="noreferrer noopener">{sc.source || sc.title || sc.url}</a></li>
-                    ))}
+                    {item.sources.map((sc, i) => {
+                      // Only a real http(s) link is clickable. A missing or bad url
+                      // with target="_blank" otherwise opened a blank tab, so show
+                      // the source as plain text instead of a dead link.
+                      const label = sc.source || sc.title || sc.url || 'Source';
+                      const linkable = /^https?:\/\//i.test(sc.url || '');
+                      return (
+                        <li key={i}>
+                          {linkable
+                            ? <a href={sc.url} target="_blank" rel="noreferrer noopener">{label}</a>
+                            : <span>{label} <em className="src-nolink">(link unavailable)</em></span>}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
