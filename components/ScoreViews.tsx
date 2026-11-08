@@ -59,6 +59,11 @@ export default function ScoreViews({ bai, psi, sci, hii }: Props) {
 
   return (
     <div className="scoreviews">
+      {/* Always expose every lens score to assistive tech, in any view: the radar
+          and rings draw the numbers as SVG, which screen readers skip. */}
+      <p className="sv-sr">
+        Four-lens scores, each out of 10. Biblical Alignment {bai}. Prophetic Significance {psi}. Source Credibility {sci}. Humanities Impact {hii}.
+      </p>
       <div className="sv-toggle" role="tablist" aria-label="Score view">
         {(['bars', 'radar', 'rings'] as View[]).map((v) => (
           <button
@@ -87,7 +92,7 @@ export default function ScoreViews({ bai, psi, sci, hii }: Props) {
 
       {view === 'radar' && (
         <div className="sv-radar">
-          <svg viewBox="0 0 220 220" width="220" height="220" role="img" aria-label="Radar of the four lens scores">
+          <svg viewBox="0 0 220 220" width="220" height="220" aria-hidden="true">
             {[0.25, 0.5, 0.75, 1].map((f) => (
               <polygon
                 key={f}
@@ -127,7 +132,7 @@ export default function ScoreViews({ bai, psi, sci, hii }: Props) {
             const on = (l.val / 10) * circ;
             return (
               <div className="sv-ring" key={l.key}>
-                <svg viewBox="0 0 84 84" width="84" height="84">
+                <svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true">
                   <circle cx="42" cy="42" r="32" fill="none" stroke="var(--rule2)" strokeWidth="7" />
                   <circle cx="42" cy="42" r="32" fill="none" stroke={l.color} strokeWidth="7" strokeLinecap="round"
                     strokeDasharray={`${on.toFixed(1)} ${circ.toFixed(1)}`} transform="rotate(-90 42 42)" />
@@ -144,6 +149,7 @@ export default function ScoreViews({ bai, psi, sci, hii }: Props) {
 
       <style>{`
         .scoreviews{margin:4px 0 14px;}
+        .sv-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
         .sv-toggle{display:inline-flex;gap:2px;padding:3px;background:var(--rule2);border-radius:9px;margin-bottom:14px;}
         .sv-tab{appearance:none;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.3px;padding:5px 13px;border-radius:7px;cursor:pointer;font-family:inherit;}
         .sv-tab.on{background:var(--raised);color:var(--body);box-shadow:0 1px 2px rgba(0,0,0,.14);}

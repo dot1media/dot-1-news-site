@@ -40,11 +40,24 @@ interface ShareItem {
 }
 
 // Original-source links may be a JSON array (citations) or a single source_url.
+// RSS feeds hand us links wrapped in tracking params; some publishers (Al
+// Jazeera among them) serve a blank page to a referrer-less hit carrying those
+// params, so a reader following the citation lands nowhere. Strip the tracking
+// query so the link points at the clean, canonical article.
+const SRC_TRACKING = /^(utm_|at_|ns_|mc_|icid$|cid$|cmpid$|ref$|ref_src$|traffic_source$|maca$|xtor$|ito$)/i;
+function cleanSourceUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    for (const k of [...u.searchParams.keys()]) if (SRC_TRACKING.test(k)) u.searchParams.delete(k);
+    return u.toString();
+  } catch { return raw; }
+}
+
 function parseSources(row: Record<string, any>): { title?: string; url: string; source?: string }[] {
   const out: { title?: string; url: string; source?: string }[] = [];
   const seen = new Set<string>();
   const add = (url?: string | null, title?: string, source?: string) => {
-    const u = String(url || '').trim();
+    const u = cleanSourceUrl(String(url || '').trim());
     if (!u || !/^https?:\/\//i.test(u) || seen.has(u)) return;
     seen.add(u); out.push({ url: u, title: title?.trim() || undefined, source: source?.trim() || undefined });
   };
@@ -529,7 +542,7 @@ export default async function SharePage({ params }: { params: { kind: string; id
                       return (
                         <li key={i}>
                           {linkable
-                            ? <a href={sc.url} target="_blank" rel="noreferrer noopener">{label}</a>
+                            ? <a href={sc.url} target="_blank" rel="noopener">{label}</a>
                             : <span>{label} <em className="src-nolink">(link unavailable)</em></span>}
                         </li>
                       );
