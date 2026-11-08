@@ -400,27 +400,29 @@ export default async function SharePage({ params }: { params: { kind: string; id
             </div>
           ) : null}
           {item.summary && <p className="sum">{item.summary}</p>}
-          {item.kind === 'article' && item.content && (
-            <div className="body">
-              {/* Force the editor's "Through the Lens" reflection onto its own
-                  block even when no blank line precedes it, and set it apart. */}
-              {item.content.replace(/\s*(Through the Lens\b:?)/gi, '\n\n$1').split(/\n{2,}/).map((para, i) => {
-                const t = para.trim();
-                if (!t) return null;
-                const m = /^through the lens\b:?\s*/i.exec(t);
-                if (m) {
-                  const reflection = t.slice(m[0].length).trim();
-                  return (
-                    <aside className="lensblock" key={i}>
-                      <div className="lh">Through the Lens</div>
-                      <p>{reflection}</p>
-                    </aside>
-                  );
-                }
-                return <p key={i}>{t}</p>;
-              })}
-            </div>
-          )}
+          {item.kind === 'article' && item.content && (() => {
+            // Split out the editor's "Through the Lens" reflection: everything from
+            // the label to the end is the reflection, whether the label sits inline
+            // or on its own line with a blank line before the text, so the reflection
+            // stays inside its block instead of leaving an empty labeled box.
+            const raw = item.content.replace(/^\s+/, '');
+            const parts = raw.split(/\n*\s*Through the Lens\b:?\s*/i);
+            const bodyParas = parts[0].split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+            const lensParas = parts.length > 1
+              ? parts.slice(1).join('\n\n').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+              : [];
+            return (
+              <div className="body">
+                {bodyParas.map((t, i) => <p key={`b${i}`}>{t}</p>)}
+                {lensParas.length > 0 && (
+                  <aside className="lensblock">
+                    <div className="lh">Through the Lens</div>
+                    {lensParas.map((t, i) => <p key={`l${i}`}>{t}</p>)}
+                  </aside>
+                )}
+              </div>
+            );
+          })()}
           {item.editorNote && (
             <div className="why">
               <div className="h">Why We Ran This</div>
