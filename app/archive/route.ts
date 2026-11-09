@@ -39,11 +39,13 @@ export async function GET(request: Request) {
         return { id: r.id, title: r.title, summary: r.summary, image: r.image, category: r.category, dateKey: parts.key, dateLabel: parts.label };
       });
       const html = renderSearchResults({ query: q, results, url: `${SITE_URL}/archive?q=${encodeURIComponent(q)}` });
-      return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      // Filtered search results are not indexable pages; keep them out of the
+      // index while still letting crawlers follow through to the articles.
+      return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'x-robots-tag': 'noindex, follow' } });
     } catch (e: any) {
       console.error('archive search failed:', e?.message);
       const html = renderSearchResults({ query: q, results: [], url: `${SITE_URL}/archive` });
-      return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'x-robots-tag': 'noindex, follow' } });
     }
   }
 
